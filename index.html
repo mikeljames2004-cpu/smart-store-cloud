@@ -1,0 +1,992 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#14325c"><title>Smart Store Cloud</title><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><style>:root{--navy:#14325c;--navy2:#1d4580;--gold:#c69b3c;--bg:#f2f5f9;--card:#fff;--ink:#162033;--mute:#5d6b82;--line:#dbe2ec;--green:#13804f;--red:#b3261e;--amber:#b26a00;--r:14px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.hidden{display:none!important}
+body.modal-open,body.previewing{overflow:hidden}
+h1,h2,h3{margin:0}h2{font-size:1.05rem}h3{font-size:.95rem;margin:14px 0 6px}
+.muted{color:var(--mute)}.small{font-size:.82rem}.err{color:var(--red);min-height:1.2em}.good{color:var(--green)}.bad{color:var(--red)}
+#app{max-width:720px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+header#top{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff;display:flex;align-items:center;gap:10px;padding:10px 14px}
+header#top .bn{flex:1;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+header#top select{max-width:100%;font:inherit;font-weight:700;background:var(--navy2);color:#fff;border:0;border-radius:8px;padding:6px}
+#rolePill{background:var(--gold);color:#241a00;font-size:.72rem;font-weight:700;border-radius:99px;padding:3px 9px}
+.pill{font-size:.72rem;font-weight:700;border-radius:99px;padding:3px 9px;background:#fff;color:#222}
+.pill.ok{background:#d8f3e4;color:#0b5d37}.pill.wait{background:#ffe9b8;color:#7a4a00}.pill.off{background:#e3e6ea;color:#333}.pill.bad{background:#ffd6d3;color:#8c1d16}
+#view{flex:1;padding:12px 12px 90px}
+nav#nav{position:fixed;bottom:0;left:0;right:0;max-width:720px;margin:0 auto;background:#fff;border-top:1px solid var(--line);display:flex;z-index:30;padding-bottom:env(safe-area-inset-bottom)}
+nav#nav button{flex:1;border:0;background:none;padding:8px 2px 7px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--mute);font:inherit;font-size:.72rem;min-height:56px}
+nav#nav button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav#nav button.on{color:var(--navy);font-weight:700}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.card.alert,.alert{background:#fff7e6;border-color:#f0d49a}
+.alert{border:1px solid #f0d49a;border-radius:10px;padding:10px;margin-bottom:10px;font-size:.92rem}.alert.bad{background:#fdecea;border-color:#f3b8b3}
+.cardhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.count{background:var(--bg);border-radius:99px;padding:1px 8px;font-size:.8rem}
+.alist{margin:0;padding-left:18px}.alist li{margin:4px 0}
+.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:11px 16px;min-height:44px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.primary{background:var(--navy);border-color:var(--navy);color:#fff}.btn.good{background:var(--green);border-color:var(--green);color:#fff}.btn.danger{background:#fff;border-color:var(--red);color:var(--red)}.btn.ghost{background:#fff}
+.btn.small{min-height:36px;padding:6px 11px;font-size:.85rem}.btn.block{display:flex;width:100%;margin-top:10px}.btn.big{min-height:52px;font-size:1.05rem}
+.btn:disabled{opacity:.55}.btn:active{transform:scale(.98)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+input,select,textarea{font:inherit;width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;background:#fff;color:var(--ink);min-height:44px}
+input[type=checkbox]{width:auto;min-height:0}
+label{display:block;font-size:.84rem;color:var(--mute);margin:8px 0 3px}
+.fld{margin-bottom:6px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.inl{display:flex;align-items:center;gap:6px;margin:0}.inl input{width:auto}
+.chk{display:flex;align-items:center;gap:10px;color:var(--ink);font-size:1rem;margin:10px 0}.chk input{width:22px;height:22px}
+.search{margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:8px 13px;font:inherit;font-size:.88rem;min-height:38px}
+.chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.tag{display:inline-block;background:var(--bg);border-radius:6px;padding:1px 7px;font-size:.74rem;font-weight:600;color:var(--mute)}
+.tag.warn{background:#ffe9b8;color:#7a4a00}.tag.bad{background:#ffd6d3;color:#8c1d16}
+.empty{text-align:center;color:var(--mute);padding:22px 8px}.empty.small{padding:10px}
+/* tiles */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.tile{background:var(--bg);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column}
+.tile small{color:var(--mute);font-size:.76rem}.tile b{font-size:1.15rem;margin-top:2px;word-break:break-word}.tile span{font-size:.76rem;color:var(--mute)}
+.tile.main{grid-column:1/-1;background:var(--navy);color:#fff}.tile.main small,.tile.main span{color:#cbd8ee}.tile.main b{font-size:1.7rem}
+.tile.neg b{color:var(--red)}.tile.warn{background:#fff3d6}
+/* rows */
+.srow,.strow{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line)}.srow:first-of-type{border-top:0}
+.srow.void{opacity:.55}.srow.void b{text-decoration:line-through}.strow.inactive{opacity:.6}
+.rt{text-align:right;flex:none;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.stq{font-weight:700}.stq.low,.ps.low{color:var(--red)}
+.mini{width:100%;border-collapse:collapse}.mini td{padding:7px 4px;border-top:1px solid var(--line)}.num{text-align:right}
+.plist{max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.prow{display:grid;grid-template-columns:1fr auto;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:#fff;font:inherit;padding:11px 12px;min-height:54px;column-gap:10px}
+.prow:active{background:var(--bg)}.pn{font-weight:600}.pp{font-weight:700;text-align:right}.ps{grid-column:1/-1;font-size:.76rem;color:var(--mute)}
+.cline{display:grid;grid-template-columns:1fr auto;gap:6px 8px;padding:10px 0;border-top:1px solid var(--line);align-items:center}
+.cline .cn{grid-column:1/-1;font-weight:600}
+.cq{display:flex;gap:4px;align-items:center}.cq input{width:58px;text-align:center}.cq .btn{padding:0;width:40px}
+.cp{display:flex;align-items:center;gap:4px}.cp input{width:96px}
+.ca{font-weight:700;text-align:right;grid-column:1}.x{border:0;background:none;color:var(--red);font-size:1.1rem;min-height:40px;min-width:40px;justify-self:end}
+.total{display:flex;justify-content:space-between;align-items:center;font-size:1.25rem;padding:12px 0 4px;border-top:2px solid var(--ink);margin-top:6px}
+.qerr{margin-top:8px;font-size:.88rem}
+.arow{display:grid;grid-template-columns:92px 1fr;gap:8px;padding:9px 0;border-top:1px solid var(--line);font-size:.9rem}.at{color:var(--mute);font-size:.78rem}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px}.kv span{color:var(--mute)}
+.pre{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;white-space:pre-wrap;font-size:.8rem;margin-top:10px}
+.code{font-family:ui-monospace,Menlo,monospace;letter-spacing:1px}.bigcode{font:700 1.7rem ui-monospace,Menlo,monospace;letter-spacing:3px;text-align:center;background:var(--bg);border-radius:12px;padding:16px;margin:10px 0;user-select:all}
+.bigbtn{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:12px;padding:14px;margin-top:10px;font:inherit}
+.bigbtn b{display:block;font-size:1.02rem}.bigbtn span{color:var(--mute);font-size:.86rem}
+/* auth */
+#auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:linear-gradient(160deg,var(--navy),#0c2142)}
+.authbox{background:#fff;border-radius:18px;padding:22px 18px;width:100%;max-width:420px}
+.authbox h1{font-size:1.4rem;margin:6px 0}.logo{width:54px;height:54px;border-radius:14px;background:var(--navy);color:var(--gold);font-weight:800;display:flex;align-items:center;justify-content:center;letter-spacing:1px}
+.seg{display:flex;background:var(--bg);border-radius:10px;padding:3px;margin:12px 0}.seg button{flex:1;border:0;background:none;padding:10px;border-radius:8px;font:inherit;font-weight:600;color:var(--mute)}.seg button.on{background:#fff;color:var(--navy);box-shadow:0 1px 3px #0002}
+.pw{display:flex;gap:6px}.pw .ghost{border:1px solid var(--line);background:#fff;border-radius:10px;padding:0 12px;font:inherit}
+/* modal */
+#modal{position:fixed;inset:0;z-index:100;background:#0008;display:flex;align-items:flex-end;justify-content:center}
+#modalBox{background:#fff;width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:18px;max-height:92vh;overflow:auto}
+.mbtns{display:flex;gap:8px;margin-top:14px}.mbtns .btn{flex:1}.mmsg{white-space:pre-wrap;margin:8px 0}
+@media(min-width:600px){#modal{align-items:center}#modalBox{border-radius:18px}}
+#toasts{position:fixed;left:0;right:0;bottom:78px;z-index:200;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;padding:0 12px}
+.toast{background:#222;color:#fff;padding:10px 14px;border-radius:10px;max-width:92%;font-size:.92rem;transition:opacity .4s}.toast.good{background:var(--green)}.toast.bad{background:var(--red)}.toast.out{opacity:0}
+/* report + preview */
+.tablewrap{overflow:auto}.report table{border-collapse:collapse;width:100%;font-size:.8rem;min-width:520px}.report th,.report td{border:1px solid var(--line);padding:5px 6px;text-align:left}.report th{background:var(--bg)}.report td.num,.report th.num{text-align:right}
+.reportwrap{overflow:auto}.reporthead{margin-bottom:8px}.reportfoot{margin-top:10px;font-size:.82rem;color:var(--mute)}
+#pv{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column}
+#pvBar{background:var(--navy);color:#fff;padding:10px 12px;display:flex;gap:12px;align-items:center}
+#pvBody{flex:1;overflow:auto;padding:10px;-webkit-overflow-scrolling:touch}#pvBody .report{background:#fff;padding:8px}#pvBody table{min-width:0;font-size:10px}#pvBody th,#pvBody td{padding:4px 3px}
+#pvFoot{background:#fff;border-top:1px solid var(--line);padding:8px 10px}#pvFoot .actions{margin-top:0}#pvText{height:90px;margin-top:6px;font-size:12px}
+.btn.secondary{background:#fff}.btn.success{background:var(--green);border-color:var(--green);color:#fff}
+@media print{body.previewing>#app,body.previewing>#auth{display:none!important}body.previewing #pv{position:static;display:block}body.previewing #pvBar,body.previewing #pvFoot{display:none!important}body.previewing #pvBody{overflow:visible;padding:0}}
+</style></head><body><div id="auth" class="hidden"></div>
+<div id="app" class="hidden">
+<header id="top"><div class="bn" id="bizName"></div><span id="rolePill"></span><span id="pill" class="pill ok">Online</span></header>
+<main id="view" aria-live="polite"></main>
+<nav id="nav" aria-label="Main"></nav>
+</div>
+<div id="modal" class="hidden" role="dialog" aria-modal="true"><div id="modalBox"></div></div>
+<div id="toasts" aria-live="polite"></div>
+<div id="pv" class="hidden" role="dialog" aria-label="Report preview"><div id="pvBar"><button class="btn secondary" id="pvClose" type="button">&larr; Back</button><strong id="pvTitle">Report preview</strong></div><div id="pvBody"></div><div id="pvFoot"><div class="actions"><button class="btn success" id="pvSave" type="button">Save PDF</button><button class="btn" id="pvShare" type="button">Share / Copy text</button><button class="btn secondary" id="pvPrint" type="button">Print</button></div><p id="pvStatus" class="muted" aria-live="polite" style="margin:8px 0 0"></p><textarea id="pvText" class="hidden" readonly></textarea></div></div>
+<script>'use strict';
+/* ===================== Smart Store Cloud — core ===================== */
+const CFG = { url: 'https://ywiqtnpfladgpgolytyn.supabase.co', key: 'sb_publishable_A5o7ucV-GVJUP3RveL5QTg_9nXZWMMx' };
+const APP_VERSION = '1.0.0';
+
+/* ---------- tiny helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v) } catch (e) { return d } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true } catch (e) { return false } },
+  del(k) { try { localStorage.removeItem(k) } catch (e) { } }
+};
+function num2(n) { n = Math.round((Number(n) || 0) * 100) / 100; const neg = n < 0; n = Math.abs(n); const p = n.toFixed(2).split('.'); return (neg ? '-' : '') + p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + p[1] }
+const money = n => '₦' + num2(n);
+const r2 = n => Math.round((Number(n) || 0) * 100) / 100;
+const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const todayString = ymd, today = () => ymd(new Date());
+const addDays = (s, n) => { const d = new Date(s + 'T12:00:00'); d.setDate(d.getDate() + n); return ymd(d) };
+function stamp() { const d = new Date(); return ymd(d) + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') }
+const fmtTime = t => { try { return new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) } catch (e) { return '' } };
+const fmtDT = t => { try { const d = new Date(t); return ymd(d) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) } catch (e) { return '' } };
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16) }));
+function toast(msg, kind) {
+  const t = document.createElement('div'); t.className = 'toast ' + (kind || ''); t.textContent = msg; t.setAttribute('role', 'status');
+  $('#toasts').appendChild(t); setTimeout(() => t.classList.add('out'), kind === 'bad' ? 6000 : 2800); setTimeout(() => t.remove(), kind === 'bad' ? 6500 : 3300);
+}
+
+/* ---------- modal dialogs (robust inside any wrapper; no alert/prompt) ---------- */
+function form(title, fields, okLabel, opts = {}) {
+  return new Promise(resolve => {
+    const box = $('#modal'), body = $('#modalBox');
+    body.innerHTML = `<h3>${esc(title)}</h3>${opts.intro ? `<p class="muted">${opts.intro}</p>` : ''}<div class="mfields">${fields.map((f, i) => `<div class="fld"><label for="mf${i}">${esc(f.label)}</label>${f.type === 'select' ? `<select id="mf${i}">${f.options.map(o => `<option value="${esc(o.v ?? o)}"${(o.v ?? o) == f.value ? ' selected' : ''}>${esc(o.t ?? o)}</option>`).join('')}</select>` :
+      f.type === 'textarea' ? `<textarea id="mf${i}" rows="4" placeholder="${esc(f.placeholder || '')}">${esc(f.value || '')}</textarea>` :
+        `<input id="mf${i}" type="${f.type || 'text'}" ${f.type === 'number' ? 'inputmode="decimal" step="any"' : ''} ${f.min != null ? `min="${f.min}"` : ''} value="${esc(f.value ?? '')}" placeholder="${esc(f.placeholder || '')}" autocomplete="off">`}${f.hint ? `<small class="muted">${esc(f.hint)}</small>` : ''}</div>`).join('')}</div><p class="err" id="mErr" aria-live="polite"></p><div class="mbtns">${opts.noCancel ? '' : '<button class="btn ghost" id="mCancel" type="button">Cancel</button>'}<button class="btn ' + (opts.danger ? 'danger' : 'primary') + '" id="mOk" type="button">${esc(okLabel || 'OK')}</button></div>`;
+    box.classList.remove('hidden'); document.body.classList.add('modal-open');
+    const done = v => { box.classList.add('hidden'); document.body.classList.remove('modal-open'); resolve(v) };
+    const first = $('#mf0'); if (first) setTimeout(() => first.focus(), 50);
+    $('#mOk').onclick = () => {
+      const out = {};
+      for (let i = 0; i < fields.length; i++) {
+        const f = fields[i], el = $('#mf' + i); let v = el.value;
+        if (f.type === 'number') { v = v === '' ? null : Number(v) }
+        else v = String(v).trim();
+        if (f.req && (v === null || v === '')) { $('#mErr').textContent = f.label + ' is required.'; el.focus(); return }
+        if (f.type === 'number' && v !== null && (!Number.isFinite(v) || (f.min != null && v < f.min))) { $('#mErr').textContent = f.label + ' must be a number' + (f.min != null ? ' of at least ' + f.min : '') + '.'; el.focus(); return }
+        if (f.int && v !== null && !Number.isInteger(v)) { $('#mErr').textContent = f.label + ' must be a whole number.'; el.focus(); return }
+        out[f.k] = v;
+      }
+      done(out);
+    };
+    const c = $('#mCancel'); if (c) c.onclick = () => done(null);
+    box.onclick = e => { if (e.target === box && !opts.noCancel) done(null) };
+  });
+}
+async function sure(msg, okLabel, danger) {
+  return new Promise(resolve => {
+    const box = $('#modal'), body = $('#modalBox');
+    body.innerHTML = `<p class="mmsg">${esc(msg).replace(/\n/g, '<br>')}</p><div class="mbtns"><button class="btn ghost" id="mCancel" type="button">Cancel</button><button class="btn ${danger ? 'danger' : 'primary'}" id="mOk" type="button">${esc(okLabel || 'Yes')}</button></div>`;
+    box.classList.remove('hidden'); document.body.classList.add('modal-open');
+    const done = v => { box.classList.add('hidden'); document.body.classList.remove('modal-open'); resolve(v) };
+    $('#mOk').onclick = () => done(true); $('#mCancel').onclick = () => done(false); box.onclick = e => { if (e.target === box) done(false) };
+  });
+}
+function showInfo(html) {
+  return new Promise(resolve => {
+    const box = $('#modal'), body = $('#modalBox');
+    body.innerHTML = html + '<div class="mbtns"><button class="btn primary" id="mOk" type="button">Done</button></div>';
+    box.classList.remove('hidden'); document.body.classList.add('modal-open');
+    const done = () => { box.classList.add('hidden'); document.body.classList.remove('modal-open'); resolve() };
+    $('#mOk').onclick = done; box.onclick = e => { if (e.target === box) done() };
+  });
+}
+
+/* ---------- Supabase REST (login + data) — own minimal client, no external library ---------- */
+let session = LS.get('ssc_session', null);
+function saveSession(s) { session = s; s ? LS.set('ssc_session', s) : LS.del('ssc_session') }
+function toSession(j) { return { access_token: j.access_token, refresh_token: j.refresh_token, expires_at: Math.floor(Date.now() / 1000) + (j.expires_in || 3600), user: j.user ? { id: j.user.id, email: j.user.email } : (session && session.user) } }
+async function rawFetch(path, o = {}) {
+  const headers = Object.assign({ apikey: CFG.key }, o.headers || {});
+  if (o.auth !== false && session) headers.Authorization = 'Bearer ' + session.access_token;
+  if (o.body !== undefined) headers['Content-Type'] = 'application/json';
+  try { return await fetch(CFG.url + path, { method: o.method || 'GET', headers, body: o.body !== undefined ? JSON.stringify(o.body) : undefined }) }
+  catch (e) { const err = new Error('No internet connection'); err.offline = true; throw err }
+}
+let refreshing = null;
+function refreshSession() {
+  if (refreshing) return refreshing;
+  refreshing = (async () => {
+    if (!session || !session.refresh_token) return 'dead';
+    try {
+      const r = await rawFetch('/auth/v1/token?grant_type=refresh_token', { method: 'POST', body: { refresh_token: session.refresh_token }, auth: false });
+      const j = await r.json().catch(() => null);
+      if (r.ok && j && j.access_token) { saveSession(toSession(j)); return 'ok' }
+      if (r.status >= 400 && r.status < 500) { saveSession(null); return 'dead' }
+      return 'offline';
+    } catch (e) { return 'offline' }
+  })().finally(() => { refreshing = null });
+  return refreshing;
+}
+async function ensureFresh() { if (session && session.expires_at - Math.floor(Date.now() / 1000) < 90) { if (await refreshSession() === 'dead') { const e = new Error('Your session expired. Please sign in again.'); e.status = 401; e.signedOut = true; throw e } } }
+function friendly(j, status) {
+  let m = j && (j.message || j.msg || j.error_description || j.error) || ('Request failed (' + status + ')');
+  if (/row-level security|permission denied|42501/i.test(m + (j && j.code))) return 'You do not have permission to do that.';
+  if (/duplicate key/i.test(m)) return 'That already exists.';
+  if (status === 401) return 'Please sign in again.';
+  return m;
+}
+async function req(path, o = {}) {
+  await ensureFresh();
+  let res = await rawFetch(path, o);
+  if (res.status === 401 && o.auth !== false && session && !o._retried) {
+    const st = await refreshSession();
+    if (st === 'ok') return req(path, { ...o, _retried: true });
+    if (st === 'offline') { const e = new Error('No internet connection'); e.offline = true; throw e }
+    const e = new Error('Your session expired. Please sign in again.'); e.status = 401; e.signedOut = true; throw e;
+  }
+  const text = await res.text(); let json = null; try { json = text ? JSON.parse(text) : null } catch (e) { }
+  if (!res.ok) { const err = new Error(friendly(json, res.status)); err.status = res.status; err.code = json && json.code; throw err }
+  return json;
+}
+const rpc = (fn, args) => req('/rest/v1/rpc/' + fn, { method: 'POST', body: args || {} });
+const get = p => req('/rest/v1/' + p);
+const insert = (t, rows, ret) => req('/rest/v1/' + t, { method: 'POST', body: rows, headers: ret ? { Prefer: 'return=representation' } : {} });
+const patch = (t, q, body) => req('/rest/v1/' + t + '?' + q, { method: 'PATCH', body, headers: { Prefer: 'return=representation' } });
+async function fetchAll(p) { // pages of 1000 (Supabase's default row cap)
+  const out = []; for (let off = 0; ; off += 1000) {
+    const rows = await req('/rest/v1/' + p, { headers: { 'Range-Unit': 'items', Range: off + '-' + (off + 999) } });
+    out.push(...rows); if (rows.length < 1000) break;
+  } return out;
+}
+function authMsg(j, status) {
+  const m = (j && (j.msg || j.message || j.error_description || j.error)) || ('Sign-in failed (' + status + ')');
+  if (/invalid login credentials/i.test(m)) return 'Wrong email or password.';
+  if (/already registered|already exists/i.test(m)) return 'This email already has an account. Tap "Sign in" instead.';
+  if (/not confirmed/i.test(m)) return 'Please confirm your email first (check your inbox), then sign in.';
+  if (status === 429 || /rate limit/i.test(m)) return 'Too many attempts. Please wait a minute and try again.';
+  return m;
+}
+async function authCall(kind, email, password) {
+  const r = await rawFetch(kind === 'up' ? '/auth/v1/signup' : '/auth/v1/token?grant_type=password', { method: 'POST', body: { email, password }, auth: false });
+  const j = await r.json().catch(() => null);
+  if (!r.ok) throw Object.assign(new Error(authMsg(j, r.status)), { status: r.status });
+  if (!j || !j.access_token) return { needsConfirm: true };
+  saveSession(toSession(j)); return { ok: true };
+}
+
+/* ---------- app state ---------- */
+const S = {
+  tab: null, nav: 0, memberships: [], biz: null, role: null, myName: '', products: [], members: [], range: null,
+  cart: [], pay: { mode: 'cash', cash: '', transfer: '' }, search: '', saleDate: null, stockFilter: { q: '', low: false, inactive: false },
+  lastModel: null, online: navigator.onLine !== false
+};
+const uid = () => session && session.user && session.user.id;
+const isMgr = () => S.role === 'owner' || S.role === 'manager';
+
+/* ---------- offline sale queue (a sale is saved on the phone first, then sent; sending is safe to repeat) ---------- */
+const qKey = () => 'ssc_q_' + uid();
+const getQ = () => LS.get(qKey(), []);
+const setQ = q => { if (!LS.set(qKey(), q)) toast('Phone storage is full. Free some space; sales cannot be saved.', 'bad') };
+const myQ = () => getQ().filter(x => S.biz && x.biz === S.biz.id);
+let flushing = false;
+let flushAgain = false;
+async function flushQueue() {
+  if (flushing) { flushAgain = true; return 0 } if (!session) return; flushing = true; let sent = 0;
+  try { do { flushAgain = false;
+    for (const item of getQ().filter(x => x.status === 'pending')) {
+      try {
+        await rpc('record_sale', { p_id: item.id, p_business: item.biz, p_sold_on: item.sold_on, p_cash: item.cash, p_transfer: item.transfer, p_credit: item.credit, p_items: item.items.map(i => ({ product_id: i.product_id, qty: i.qty, unit_price: i.unit_price })), p_note: item.note || null });
+        setQ(getQ().filter(x => x.id !== item.id)); sent++;
+      } catch (e) {
+        if (e.offline || e.signedOut) break;
+        if (e.status >= 400 && e.status < 500 && ![401, 408, 429].includes(e.status)) setQ(getQ().map(x => x.id === item.id ? { ...x, status: 'error', error: e.message } : x));
+        else break;
+      }
+    } } while (flushAgain && S.online);
+  } finally { flushing = false; updatePill(); }
+  if (sent) { await loadProducts().catch(() => { }); if (S.tab === 'sell') renderPlist(), renderTodaySales(); }
+  return sent;
+}
+function updatePill() {
+  const el = $('#pill'); if (!el) return; const n = getQ().filter(x => x.status === 'pending').length, bad = getQ().filter(x => x.status === 'error').length;
+  el.className = 'pill ' + (!S.online ? 'off' : n ? 'wait' : 'ok');
+  el.textContent = !S.online ? 'Offline' + (n ? ' · ' + n + ' waiting' : '') : n ? n + ' sending…' : bad ? bad + ' need attention' : 'Online';
+  if (bad && S.online && !n) el.className = 'pill bad';
+}
+window.addEventListener('online', () => { S.online = true; updatePill(); flushQueue() });
+window.addEventListener('offline', () => { S.online = false; updatePill() });
+
+/* ---------- data loaders ---------- */
+const prodKey = () => 'ssc_prod_' + (S.biz && S.biz.id);
+async function loadProducts() {
+  try { S.products = await fetchAll('product_stock?select=*&business_id=eq.' + S.biz.id + '&order=name.asc'); LS.set(prodKey(), S.products) }
+  catch (e) { if (!e.offline) throw e; S.products = LS.get(prodKey(), S.products || []) }
+  return S.products;
+}
+async function loadMembers() {
+  if (!isMgr()) { S.members = [{ user_id: uid(), display_name: S.myName, role: S.role, active: true }]; return }
+  try { S.members = await get('members?select=user_id,role,display_name,active,created_at&business_id=eq.' + S.biz.id + '&order=created_at.asc') } catch (e) { if (!e.offline) throw e }
+}
+const nameOf = id => { const m = S.members.find(x => x.user_id === id); return m ? m.display_name : (id === uid() ? S.myName : 'Staff') };
+const pName = id => { const p = S.products.find(x => x.product_id === id); return p ? p.name : 'Item' };
+const pendingQty = pid => myQ().filter(q => q.status === 'pending').reduce((n, q) => n + q.items.filter(i => i.product_id === pid).reduce((a, i) => a + i.qty, 0), 0);
+const stockOf = p => Number(p.stock) - pendingQty(p.product_id);
+
+function periodText(m){return m.type==='weekly'?m.start+' to '+m.end:m.end}
+function modelHtml(m){
+  const t=m.totals;
+  const sumRows=[['Total Quantity Sold',t.qty],['Total Amount of Sales',money(t.amount)],['Total Amount Received — Cash',money(t.cash)],['Total Amount Received — Transfer',money(t.transfer)],['Total Amount Received',money(t.received)]];
+  if(Math.abs(t.credit)>0.005)sumRows.push(['Sales not yet received (credit)',money(t.credit)]);
+  sumRows.push(['Expenses and losses',money(t.expense)]);
+  return `<div class="report"><div class="reporthead"><h3>${m.title}</h3><div><strong>Account:</strong> ${esc(m.account)}<br><strong>${m.type==='weekly'?'Period':'Date'}:</strong> ${esc(periodText(m))}</div></div><div class="tablewrap"><table><thead><tr><th>S/N</th><th>Description</th><th class="num">Opening Stock</th><th class="num">Closing Stock</th><th class="num">Qty Sold</th><th class="num">Unit Price (₦)</th><th class="num">Amount (₦)</th><th>Remarks</th></tr></thead><tbody>${m.rows.map(r=>`<tr><td>${r.sn}</td><td>${esc(r.name)}</td><td class="num">${r.open}</td><td class="num">${r.close}</td><td class="num">${r.sold}</td><td class="num">${num2(r.price)}</td><td class="num">${num2(r.amount)}</td><td>${esc(r.remarks)}</td></tr>`).join('')}<tr><th colspan="4">TOTAL</th><th class="num">${t.qty}</th><th></th><th class="num">${num2(t.amount)}</th><th></th></tr></tbody></table></div><h3>SALES AND CASH SUMMARY</h3><table style="min-width:0"><tbody>${sumRows.map(r=>`<tr><td>${r[0]}</td><td class="num">${r[1]}</td></tr>`).join('')}<tr><th>Balance after expenses (received minus expenses)</th><th class="num">${money(t.balance)}</th></tr></tbody></table>${m.expenses.length?`<h3>EXPENSES RECORDED</h3><table style="min-width:0"><tbody>${m.expenses.map(e=>`<tr><td>${esc(e.date)}</td><td>${esc(e.description)}</td><td>${esc(e.method)}</td><td class="num">${money(e.amount)}</td></tr>`).join('')}</tbody></table>`:''}<p class="small"><strong>Note:</strong> This balance is calculated from recorded cash and transfers less recorded expenses. Check it against the actual cash, bank transfers, credit sales, and your workplace's remittance rules.</p><div class="reportfoot"><div><strong>Prepared by:</strong> ${esc(m.prepared)}<br><div class="sig">Signature</div></div><div><strong>Date prepared:</strong> ${esc(m.generated.slice(0,10))}<br><div class="sig">Checked / received by</div></div></div></div>`;
+}
+function modelText(m){
+  const t=m.totals,L=[m.title,'Account: '+m.account,(m.type==='weekly'?'Period: ':'Date: ')+periodText(m),''];
+  m.rows.forEach(r=>L.push(`${r.sn}. ${r.name}: open ${r.open}, close ${r.close}, sold ${r.sold} @ ${num2(r.price)} = ${num2(r.amount)}${r.remarks?' ('+r.remarks+')':''}`));
+  L.push('','SALES AND CASH SUMMARY','Total quantity sold: '+t.qty,'Total sales: NGN '+num2(t.amount),'Cash received: NGN '+num2(t.cash),'Transfer received: NGN '+num2(t.transfer),'Total received: NGN '+num2(t.received));
+  if(Math.abs(t.credit)>0.005)L.push('Not yet received (credit): NGN '+num2(t.credit));
+  L.push('Expenses and losses: NGN '+num2(t.expense));m.expenses.forEach(e=>L.push('  - '+e.date+' '+e.description+' ('+e.method+'): NGN '+num2(e.amount)));
+  L.push('Balance after expenses: NGN '+num2(t.balance),'','Prepared by: '+m.prepared,'Generated: '+m.generated);return L.join('\n');
+}
+
+/* ---- Minimal PDF writer (A4, Helvetica, WinAnsi, real table layout) ---- */
+const PDFW={"r": [278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333, 278, 278, 556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 278, 278, 584, 584, 584, 556, 1015, 667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833, 722, 778, 667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611, 278, 278, 278, 469, 556, 333, 556, 556, 500, 556, 556, 278, 556, 556, 222, 222, 500, 222, 833, 556, 556, 556, 556, 333, 500, 278, 556, 500, 722, 500, 500, 500, 334, 260, 334, 584], "b": [278, 333, 474, 556, 556, 889, 722, 238, 333, 333, 389, 584, 278, 333, 278, 278, 556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 333, 333, 584, 584, 584, 611, 975, 722, 722, 722, 722, 667, 611, 778, 722, 278, 556, 722, 611, 833, 722, 778, 667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611, 333, 278, 333, 584, 556, 333, 556, 611, 556, 611, 556, 333, 611, 611, 278, 278, 556, 278, 889, 611, 611, 611, 611, 389, 556, 333, 611, 556, 778, 556, 556, 500, 389, 280, 389, 584]};
+function toWin(s){s=String(s==null?'':s).replace(/\u20A6/g,'N').replace(/[\u2013\u2014]/g,'-').replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"').replace(/\u2022/g,'-').replace(/\u2026/g,'...').replace(/[\r\n\t]+/g,' ');let o='';for(const ch of s){const c=ch.codePointAt(0);o+=((c>=32&&c<=126)||(c>=160&&c<=255))?ch:'?'}return o}
+function pw(s,b,sz){let w=0;const T=b?PDFW.b:PDFW.r;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);w+=(c>=32&&c<127)?T[c-32]:556}return w*sz/1000}
+function wrapPdf(text,maxW,b,sz){
+  const s=toWin(text);if(!s.trim())return [''];const out=[];let line='';
+  for(const word of s.split(' ')){
+    let w=word;
+    while(pw(w,b,sz)>maxW){let k=w.length;while(k>1&&pw(w.slice(0,k),b,sz)>maxW)k--;if(line){out.push(line);line=''}out.push(w.slice(0,k));w=w.slice(k)}
+    const t=line?line+' '+w:w;if(pw(t,b,sz)<=maxW)line=t;else{out.push(line);line=w}
+  }
+  if(line)out.push(line);return out;
+}
+function buildPdf(m){
+  const W=595,H=842,M=34,CW=W-2*M,FOOT=34,pages=[];let cur,y;
+  const esc2=s=>toWin(s).replace(/[\\()]/g,'\\$&'),f=n=>(Math.round(n*100)/100).toString();
+  const T=(x,yy,s,sz,b)=>cur.push(`BT /F${b?2:1} ${sz} Tf ${f(x)} ${f(yy)} Td (${esc2(s)}) Tj ET`);
+  const TR=(xr,yy,s,sz,b)=>T(xr-pw(toWin(s),b,sz),yy,s,sz,b);
+  const LN=(x1,y1,x2,y2,wd,g)=>cur.push(`${g} G ${wd} w ${f(x1)} ${f(y1)} m ${f(x2)} ${f(y2)} l S`);
+  const FILL=(x,yy,w,h,g)=>cur.push(`${g} g ${f(x)} ${f(yy)} ${f(w)} ${f(h)} re f 0 g`);
+  const cols=[{k:'sn',w:22,h:'S/N',a:'l'},{k:'name',w:140,h:'Description',a:'l'},{k:'open',w:42,h:'Opening Stock',a:'r'},{k:'close',w:42,h:'Closing Stock',a:'r'},{k:'sold',w:38,h:'Qty Sold',a:'r'},{k:'price',w:56,h:'Unit Price (N)',a:'r'},{k:'amount',w:64,h:'Amount (N)',a:'r'},{k:'remarks',w:123,h:'Remarks',a:'l'}];
+  let cx=M;cols.forEach(c=>{c.x=cx;cx+=c.w});
+  const SZ=8,LH=10,PAD=2.5;
+  function newPage(first){
+    cur=[];pages.push(cur);y=H-M;
+    if(first){
+      T(M,y-8,'SMART STORE MANAGER',9,true);TR(W-M,y-8,'Prepared by '+m.prepared,8,false);y-=14;LN(M,y,W-M,y,1.2,0.25);y-=22;
+      T(M,y,m.title,15,true);y-=18;
+      T(M,y,'Account: ',9.5,true);T(M+pw('Account: ',true,9.5),y,m.account,9.5,false);y-=13;
+      T(M,y,(m.type==='weekly'?'Period: ':'Date: '),9.5,true);T(M+pw(m.type==='weekly'?'Period: ':'Date: ',true,9.5),y,periodText(m),9.5,false);y-=16;
+    }else{
+      T(M,y-8,m.title+' - '+m.account+' - '+periodText(m)+' (continued)',8.5,true);y-=18;
+    }
+  }
+  function headerRow(){
+    const lines=cols.map(c=>wrapPdf(c.h,c.w-2*PAD,true,SZ)),n=Math.max(...lines.map(l=>l.length)),h=n*LH+2*PAD-1;
+    FILL(M,y-h,CW,h,0.86);
+    cols.forEach((c,i)=>lines[i].forEach((ln,j)=>{const ty=y-PAD-SZ+1-j*LH;c.a==='r'?TR(c.x+c.w-PAD,ty,ln,SZ,true):T(c.x+PAD,ty,ln,SZ,true)}));
+    LN(M,y,W-M,y,0.6,0.3);LN(M,y-h,W-M,y-h,0.6,0.3);y-=h;
+  }
+  function room(h){return y-h>=M+FOOT}
+  newPage(true);headerRow();
+  m.rows.forEach((r,idx)=>{
+    const cells={sn:String(r.sn),name:r.name,open:String(r.open),close:String(r.close),sold:String(r.sold),price:num2(r.price),amount:num2(r.amount),remarks:r.remarks};
+    const lines=cols.map(c=>wrapPdf(cells[c.k],c.w-2*PAD,false,SZ)),n=Math.max(...lines.map(l=>l.length)),h=n*LH+2*PAD;
+    if(!room(h)){newPage(false);headerRow()}
+    if(idx%2===1)FILL(M,y-h,CW,h,0.965);
+    cols.forEach((c,i)=>lines[i].forEach((ln,j)=>{const ty=y-PAD-SZ+1-j*LH;c.a==='r'?TR(c.x+c.w-PAD,ty,ln,SZ,false):T(c.x+PAD,ty,ln,SZ,false)}));
+    LN(M,y-h,W-M,y-h,0.3,0.8);y-=h;
+  });
+  if(!m.rows.length){const h=22;T(M+PAD,y-14,'No stock or sales records for this selection.',SZ+1,false);y-=h}
+  {const t=m.totals,h=18;if(!room(h+10))newPage(false);FILL(M,y-h,CW,h,0.92);
+   T(cols[0].x+PAD,y-12,'TOTAL',SZ+1,true);TR(cols[4].x+cols[4].w-PAD,y-12,String(t.qty),SZ+1,true);TR(cols[6].x+cols[6].w-PAD,y-12,num2(t.amount),SZ+1,true);
+   LN(M,y,W-M,y,0.8,0.3);LN(M,y-h,W-M,y-h,0.8,0.3);y-=h+16}
+  // Summary block (kept together)
+  const t=m.totals,sum=[['Total Quantity Sold',String(t.qty)],['Total Amount of Sales','NGN '+num2(t.amount)],['Total Amount Received - Cash','NGN '+num2(t.cash)],['Total Amount Received - Transfer','NGN '+num2(t.transfer)],['Total Amount Received','NGN '+num2(t.received)]];
+  if(Math.abs(t.credit)>0.005)sum.push(['Sales not yet received (credit)','NGN '+num2(t.credit)]);
+  sum.push(['Expenses and losses','NGN '+num2(t.expense)]);
+  const RH=16,sumH=18+(sum.length+1)*RH+6;
+  if(!room(sumH))newPage(false);
+  T(M,y-9,'SALES AND CASH SUMMARY',10,true);y-=18;
+  const bx=M,bw=360;
+  sum.forEach(([a,b],i)=>{if(i%2===0)FILL(bx,y-RH,bw,RH,0.965);T(bx+6,y-12,a,9,false);TR(bx+bw-6,y-12,b,9,false);LN(bx,y-RH,bx+bw,y-RH,0.3,0.8);y-=RH});
+  FILL(bx,y-RH-2,bw,RH+2,0.86);T(bx+6,y-13,'Balance after expenses (received minus expenses)',8.5,true);TR(bx+bw-6,y-13,'NGN '+num2(t.balance),9.5,true);LN(bx,y,bx+bw,y,0.8,0.3);LN(bx,y-RH-2,bx+bw,y-RH-2,0.8,0.3);y-=RH+14;
+  // Expenses itemised
+  if(m.expenses.length){
+    const eh=18+m.expenses.length*RH;if(!room(eh))newPage(false);
+    T(M,y-9,'EXPENSES RECORDED',10,true);y-=18;
+    m.expenses.forEach(e=>{const dl=wrapPdf(e.description,250,false,9),h=Math.max(RH,dl.length*11+6);if(!room(h))newPage(false);
+      T(bx+6,y-12,e.date,9,false);dl.forEach((ln,j)=>T(bx+80,y-12-j*11,ln,9,false));T(bx+340,y-12,e.method,9,false);TR(W-M-6,y-12,'NGN '+num2(e.amount),9,false);LN(M,y-h,W-M,y-h,0.3,0.8);y-=h});
+    y-=10;
+  }
+  // Note + signatures (kept together)
+  const note=wrapPdf('Note: This balance is calculated from recorded cash and transfers less recorded expenses. Check it against the actual cash, bank transfers, credit sales and your workplace remittance rules.',CW,false,7.5);
+  const needH=note.length*10+14+54;if(!room(needH))newPage(false);
+  note.forEach((ln,j)=>T(M,y-8-j*10,ln,7.5,false));y-=note.length*10+14;
+  T(M,y-8,'Prepared by: ',9,true);T(M+pw('Prepared by: ',true,9),y-8,m.prepared,9,false);
+  T(W/2+10,y-8,'Date prepared: ',9,true);T(W/2+10+pw('Date prepared: ',true,9),y-8,m.generated.slice(0,10),9,false);y-=34;
+  LN(M,y,M+200,y,0.8,0.2);LN(W/2+10,y,W/2+210,y,0.8,0.2);T(M,y-10,'Signature',8,false);T(W/2+10,y-10,'Checked / received by',8,false);
+  // Footers
+  pages.forEach((p,i)=>{cur=p;LN(M,M+10,W-M,M+10,0.4,0.7);T(M,M-2,'Smart Store Manager - '+m.account+' - '+periodText(m),7.5,false);TR(W-M,M-2,'Page '+(i+1)+' of '+pages.length+' - generated '+m.generated,7.5,false)});
+  // Assemble file (latin1 string == bytes)
+  const objs=[];objs[1]='<< /Type /Catalog /Pages 2 0 R >>';
+  const kids=pages.map((_,i)=>(6+2*i)+' 0 R').join(' ');
+  objs[2]=`<< /Type /Pages /Kids [${kids}] /Count ${pages.length} >>`;
+  objs[3]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
+  objs[4]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>';
+  pages.forEach((p,i)=>{const s=p.join('\n');objs[5+2*i]=`<< /Length ${s.length} >>\nstream\n${s}\nendstream`;objs[6+2*i]=`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${5+2*i} 0 R >>`});
+  const info=objs.length;objs[info]=`<< /Title (${esc2(m.title+' - '+m.account+' - '+periodText(m))}) /Author (${esc2(m.prepared)}) /Creator (Smart Store Manager) /Producer (Smart Store Manager) >>`;
+  let pdf='%PDF-1.4\n%\xE2\xE3\xCF\xD3\n';const off=[0];
+  for(let i=1;i<objs.length;i++){off[i]=pdf.length;pdf+=`${i} 0 obj\n${objs[i]}\nendobj\n`}
+  const xr=pdf.length;pdf+=`xref\n0 ${objs.length}\n0000000000 65535 f \n`;for(let i=1;i<objs.length;i++)pdf+=String(off[i]).padStart(10,'0')+' 00000 n \n';
+  pdf+=`trailer\n<< /Size ${objs.length} /Root 1 0 R /Info ${info} 0 R >>\nstartxref\n${xr}\n%%EOF\n`;
+  const u=new Uint8Array(pdf.length);for(let i=0;i<pdf.length;i++)u[i]=pdf.charCodeAt(i)&255;return u;
+}
+function pdfFileName(m){return m.account.replace(/[^a-z0-9]+/gi,'_')+'_'+m.type+'_report_'+m.end+'.pdf'}
+
+/* ---- In-app preview + save ---- */
+let pvModel=null,pvPushed=false;
+function pvStatus(t){const e=document.getElementById('pvStatus');if(e)e.textContent=t}
+function openPreview(m,label){
+  pvModel=m;document.getElementById('pvTitle').textContent=label||'Report preview';
+  document.getElementById('pvBody').innerHTML=modelHtml(m);document.getElementById('pvBody').scrollTop=0;
+  pvStatus('This is exactly what the PDF will contain. Tap "Save PDF" to keep it.');
+  document.getElementById('pv').classList.remove('hidden');document.body.classList.add('previewing');
+  try{history.pushState({pv:1},'');pvPushed=true}catch(e){pvPushed=false}
+}
+function closePreview(fromPop){
+  document.getElementById('pv').classList.add('hidden');document.body.classList.remove('previewing');
+  if(pvPushed&&!fromPop){pvPushed=false;try{history.back()}catch(e){}}else pvPushed=false;
+}
+window.addEventListener('popstate',()=>{if(!document.getElementById('pv').classList.contains('hidden'))closePreview(true)});
+async function savePvPdf(){
+  if(!pvModel)return;const m=pvModel,name=pdfFileName(m);let bytes;
+  try{bytes=buildPdf(m)}catch(e){pvStatus('Could not build the PDF: '+(e.message||e));alert('PDF creation failed: '+(e.message||e));return}
+  const blob=new Blob([bytes],{type:'application/pdf'});
+  pvStatus('PDF built ('+Math.round(bytes.length/1024*10)/10+' KB, '+name+'). Handing it to Android…');
+  // 1) Android share sheet (lets you save to Files/Drive or send by WhatsApp)
+  try{const file=new File([blob],name,{type:'application/pdf'});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:name});pvStatus('Share sheet opened for '+name+'. Choose Files/Drive/WhatsApp to keep it.');return}
+  }catch(e){if(e&&e.name==='AbortError'){pvStatus('Share cancelled. Nothing was saved yet.');return}}
+  // 2) Normal download (works in Chrome and in wrappers that handle downloads)
+  try{const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.rel='noopener';a.style.display='none';document.body.appendChild(a);a.click();
+    setTimeout(()=>{try{a.remove();URL.revokeObjectURL(url)}catch(e){}},60000);
+    pvStatus('Download requested for '+name+'. Look for it in Downloads / your notifications. If nothing arrived, this app cannot save files directly — tap "Share / Copy text" to send the report by WhatsApp or paste it into Notes.');
+  }catch(e){pvStatus('This app could not start a file download. Tap "Share / Copy text" instead.')}
+}
+async function shareOrCopyText(){
+  if(!pvModel)return;const txt=modelText(pvModel);
+  try{if(navigator.share){await navigator.share({title:pvModel.title,text:txt});pvStatus('Share sheet opened.');return}}catch(e){if(e&&e.name==='AbortError'){pvStatus('Share cancelled.');return}}
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(txt);pvStatus('Report text copied. Paste it into WhatsApp, Notes or email.');return}}catch(e){}
+  try{const ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;left:0;top:0;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();const ok=document.execCommand('copy');ta.remove();
+    if(ok){pvStatus('Report text copied. Paste it into WhatsApp, Notes or email.');return}}catch(e){}
+  const box=document.getElementById('pvText');box.value=txt;box.classList.remove('hidden');box.focus();box.select();pvStatus('Automatic copy is blocked here. The text is selected below: long-press and tap Copy.');
+}
+function printPv(){try{window.print();pvStatus('If no print dialog appeared, this phone app cannot print directly. Use Save PDF instead.')}catch(e){pvStatus('Printing is not available in this app. Use Save PDF instead.')}}
+(function(){const w=(id,f)=>{const e=document.getElementById(id);if(e)e.addEventListener('click',f)};
+w('pvClose',()=>closePreview(false));w('pvSave',savePvPdf);w('pvShare',shareOrCopyText);w('pvPrint',printPv)})();
+
+/* ===================== Screens: sign-in, onboarding, shell, Sell, Stock, Expenses ===================== */
+const VIEWS = {}, A = {}, I = {};
+const ROLE_LABEL = { owner: 'Owner', manager: 'Manager', staff: 'Staff' };
+const ICON = {
+  dash: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+  sell: '<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>',
+  stock: '<path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+  rep: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+  more: '<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>',
+  acct: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  exp: '<rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>'
+};
+const svg = k => `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
+const busy = async (el, fn) => { if (el && el.disabled) return; if (el) el.disabled = true; try { return await fn() } catch (e) { if (e.signedOut) { saveSession(null); showAuth('in', e.message) } else toast(e.message || 'Something went wrong', 'bad') } finally { if (el) el.disabled = false } };
+const stale = n => n !== S.nav;
+
+/* ---------- sign in / create account ---------- */
+function showAuth(mode = 'in', msg = '') {
+  $('#app').classList.add('hidden'); const a = $('#auth'); a.classList.remove('hidden');
+  a.innerHTML = `<div class="authbox"><div class="logo">SSC</div><h1>Smart Store Cloud</h1>
+  <p class="muted">Sales, stock and reports for your business. The owner sees everything live; staff record sales.</p>
+  <div class="seg"><button data-act="authmode" data-v="in" class="${mode === 'in' ? 'on' : ''}">Sign in</button><button data-act="authmode" data-v="up" class="${mode === 'up' ? 'on' : ''}">Create account</button></div>
+  <label for="aEmail">Email</label><input id="aEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="none">
+  <label for="aPass">Password</label><div class="pw"><input id="aPass" type="password" autocomplete="${mode === 'in' ? 'current-password' : 'new-password'}"><button type="button" class="ghost" data-act="showpw">Show</button></div>
+  <p class="err" id="aErr" role="alert">${esc(msg)}</p>
+  <button class="btn primary block" id="aGo" data-act="authgo" data-mode="${mode}">${mode === 'in' ? 'Sign in' : 'Create account'}</button>
+  <p class="muted small">${mode === 'up' ? 'Use an email you can open. Password: at least 6 characters.' : 'Staff: tap “Create account” first, then join your boss’s business with the code you were sent.'}</p></div>`;
+  $('#aEmail').focus();
+}
+A.authmode = el => showAuth(el.dataset.v);
+A.showpw = el => { const p = $('#aPass'); p.type = p.type === 'password' ? 'text' : 'password'; el.textContent = p.type === 'password' ? 'Show' : 'Hide' };
+A.authgo = el => busy(el, async () => {
+  const email = $('#aEmail').value.trim().toLowerCase(), pass = $('#aPass').value, err = $('#aErr'); err.textContent = '';
+  if (!/^\S+@\S+\.\S+$/.test(email)) { err.textContent = 'Enter a valid email address.'; return }
+  if (pass.length < 6) { err.textContent = 'Password must be at least 6 characters.'; return }
+  let r; try { r = await authCall(el.dataset.mode, email, pass) } catch (e) { err.textContent = e.offline ? 'No internet connection. Connect and try again.' : e.message; return }
+  if (r.needsConfirm) { err.textContent = 'Account created. Check your email and tap the confirmation link, then come back and sign in.'; return }
+  await boot();
+});
+
+/* ---------- onboarding: create a business or join with a code ---------- */
+function showOnboarding() {
+  $('#app').classList.add('hidden'); const a = $('#auth'); a.classList.remove('hidden');
+  a.innerHTML = `<div class="authbox"><div class="logo">SSC</div><h1>Welcome</h1><p class="muted">Signed in as <b>${esc(session.user.email)}</b>. What would you like to do?</p>
+  <button class="bigbtn" data-act="createbiz"><b>I own a business</b><span>Create it, add your products, invite your staff.</span></button>
+  <button class="bigbtn" data-act="joinbiz"><b>I was invited by my boss</b><span>Enter the code you were sent.</span></button>
+  <button class="btn ghost block" data-act="signout">Sign out</button></div>`;
+}
+A.createbiz = () => busy(null, async () => {
+  const v = await form('Create your business', [{ k: 'name', label: 'Business name', req: true, placeholder: 'e.g. Mike General Store' }, { k: 'me', label: 'Your name', req: true, placeholder: 'e.g. Michael James' }], 'Create business');
+  if (!v) return; await rpc('create_business', { p_name: v.name, p_display_name: v.me }); toast('Business created', 'good'); await boot();
+});
+A.joinbiz = () => busy(null, async () => {
+  const v = await form('Join with invite code', [{ k: 'code', label: 'Invite code', req: true, placeholder: 'e.g. 3F9A1C7B2D' }, { k: 'me', label: 'Your name', req: true, placeholder: 'e.g. Ada' }], 'Join');
+  if (!v) return; await rpc('accept_invite', { p_code: v.code, p_display_name: v.me }); toast('You have joined the business', 'good'); await boot();
+});
+A.signout = () => busy(null, async () => {
+  const q = getQ().filter(x => x.status === 'pending').length;
+  if (q && !await sure(q + ' sale(s) have not been sent yet. If you sign out now they stay on this phone and send after you sign in again. Sign out?', 'Sign out')) return;
+  try { await rawFetch('/auth/v1/logout', { method: 'POST' }) } catch (e) { }
+  saveSession(null); S.biz = null; S.products = []; showAuth();
+});
+
+/* ---------- boot ---------- */
+let timersOn = false;
+async function boot() {
+  if (!session) { showAuth(); return }
+  let ms = null;
+  try {
+    ms = await get('members?select=business_id,role,display_name,businesses(id,name,staff_can_receive_stock,staff_can_add_expenses)&user_id=eq.' + uid() + '&active=eq.true&order=created_at.asc');
+    LS.set('ssc_ms_' + uid(), ms);
+  } catch (e) {
+    if (e.signedOut || e.status === 401) { saveSession(null); showAuth('in', 'Please sign in again.'); return }
+    if (e.offline) { ms = LS.get('ssc_ms_' + uid(), null); if (!ms) { $('#auth').classList.remove('hidden'); $('#auth').innerHTML = '<div class="authbox"><h1>No internet</h1><p class="muted">Connect to the internet once to load your business, then you can sell offline.</p><button class="btn primary block" data-act="retry">Try again</button></div>'; return } }
+    else { $('#auth').classList.remove('hidden'); $('#app').classList.add('hidden'); $('#auth').innerHTML = `<div class="authbox"><h1>Something went wrong</h1><p class="err">${esc(e.message)}</p><button class="btn primary block" data-act="retry">Try again</button><button class="btn ghost block" data-act="signout">Sign out</button></div>`; return }
+  }
+  if (!ms.length) { showOnboarding(); return }
+  S.memberships = ms; const saved = LS.get('ssc_biz_' + uid(), null), m = ms.find(x => x.business_id === saved) || ms[0];
+  S.biz = m.businesses; S.role = m.role; S.myName = m.display_name; LS.set('ssc_biz_' + uid(), S.biz.id);
+  S.cart = []; S.range = null; S.lastModel = null;
+  $('#auth').classList.add('hidden'); $('#app').classList.remove('hidden');
+  await loadProducts().catch(e => toast(e.message, 'bad')); await loadMembers().catch(() => { });
+  renderShell(); go(isMgr() ? 'dash' : 'sell');
+  flushQueue();
+  if (!timersOn) {
+    timersOn = true;
+    setInterval(() => { if (session && S.biz && S.online) flushQueue() }, 20000);
+    setInterval(() => { if (S.tab === 'dash' && !document.hidden && S.online && $('#modal').classList.contains('hidden')) VIEWS.dash(true) }, 20000);
+  }
+}
+A.retry = () => boot();
+
+function renderShell() {
+  $('#bizName').innerHTML = S.memberships.length > 1 ? `<select id="bizSel" aria-label="Switch business">${S.memberships.map(m => `<option value="${m.business_id}"${m.business_id === S.biz.id ? ' selected' : ''}>${esc(m.businesses.name)}</option>`).join('')}</select>` : esc(S.biz.name);
+  $('#rolePill').textContent = ROLE_LABEL[S.role]; updatePill();
+  const items = S.role === 'staff' ? [['sell', 'Sell'], ['stock', 'Stock'], ['exp', 'Expenses'], ['acct', 'Account']] : [['dash', 'Home'], ['sell', 'Sell'], ['stock', 'Stock'], ['rep', 'Reports'], ['more', 'More']];
+  $('#nav').innerHTML = items.map(([k, t]) => `<button data-act="nav" data-tab="${k}" id="nav_${k}">${svg(k)}<span>${t}</span></button>`).join('');
+}
+function go(tab) {
+  S.tab = tab; S.nav++; const sub = { team: 'more', act: 'more', imp: 'more', exp: S.role === 'staff' ? 'exp' : 'more', acct: S.role === 'staff' ? 'acct' : 'more' }[tab] || tab;
+  $$('#nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === sub));
+  (VIEWS[tab] || VIEWS.sell)(); $('#view').scrollTop = 0; window.scrollTo(0, 0);
+}
+A.nav = el => go(el.dataset.tab);
+A.goto = el => go(el.dataset.tab);
+
+/* ---------- SELL ---------- */
+const saleDay = () => isMgr() ? (S.saleDate || today()) : today();
+function queueBanner() {
+  const bad = myQ().filter(x => x.status === 'error'); if (!bad.length) return '';
+  return `<div class="alert bad"><b>${bad.length} sale(s) could not be recorded</b>${bad.map(b => `<div class="qerr">${esc(b.items.map(i => i.qty + '× ' + i.name).join(', '))} — ${money(b.cash + b.transfer + b.credit)}<br><small>${esc(b.error)}</small><button class="btn small ghost" data-act="qdiscard" data-id="${b.id}">Discard</button></div>`).join('')}</div>`;
+}
+A.qdiscard = el => busy(el, async () => { if (!await sure('Discard this sale? It was never recorded, so stock and totals are not affected.', 'Discard', true)) return; setQ(getQ().filter(x => x.id !== el.dataset.id)); updatePill(); if (S.tab === 'sell') VIEWS.sell(); else if (S.tab === 'acct') VIEWS.acct() });
+VIEWS.sell = function () {
+  $('#view').innerHTML = `${queueBanner()}
+  <section class="card"><div class="cardhead"><h2>New sale</h2>${isMgr() ? `<label class="inl">Date <input type="date" id="saleDate" value="${saleDay()}" max="${today()}" data-in="saledate"></label>` : ''}</div>
+  <input id="psearch" class="search" type="search" placeholder="Search product…" value="${esc(S.search)}" data-in="psearch" autocomplete="off">
+  <div id="plist" class="plist" role="list"></div></section>
+  <section class="card" id="cartCard"></section>
+  <section class="card"><div class="cardhead"><h2>${isMgr() ? 'Sales on ' + saleDay() : 'Your sales today'}</h2></div><div id="todaySales"><p class="muted">Loading…</p></div></section>`;
+  renderPlist(); renderCart(); renderTodaySales();
+};
+I.psearch = el => { S.search = el.value; renderPlist() };
+I.saledate = el => { S.saleDate = el.value || today(); VIEWS.sell() };
+function renderPlist() {
+  const box = $('#plist'); if (!box) return; const toks = S.search.toLowerCase().split(/\s+/).filter(Boolean);
+  const list = S.products.filter(p => p.active && toks.every(t => (p.name + ' ' + (p.category || '')).toLowerCase().includes(t))).slice(0, 150);
+  if (!S.products.filter(p => p.active).length) { box.innerHTML = `<div class="empty">No products yet.<br>${isMgr() ? 'Add products in <b>Stock</b>, or import your old Smart Store Manager backup from <b>More → Import</b>.' : 'Ask the owner to add products.'}</div>`; return }
+  if (!list.length) { box.innerHTML = '<div class="empty">No product matches your search.</div>'; return }
+  box.innerHTML = list.map(p => { const st = stockOf(p), low = st <= 0 || (p.min_stock > 0 && st <= p.min_stock); return `<button class="prow" role="listitem" data-act="add" data-id="${p.product_id}"><span class="pn">${esc(p.name)}</span><span class="pp">${money(p.price)}</span><span class="ps ${low ? 'low' : ''}">${st} in stock</span></button>` }).join('');
+}
+A.add = el => { const p = S.products.find(x => x.product_id === el.dataset.id); if (!p) return; const l = S.cart.find(x => x.pid === p.product_id); if (l) l.qty = Number(l.qty) + 1; else S.cart.push({ pid: p.product_id, name: p.name, qty: 1, price: Number(p.price), list: Number(p.price) }); renderCart() };
+const cartTotal = () => r2(S.cart.reduce((n, l) => n + (Number(l.qty) || 0) * (Number(l.price) || 0), 0));
+function payHint() {
+  const t = cartTotal(), m = S.pay.mode; if (m !== 'split') return ''; const c = r2(S.pay.cash || 0), tr = r2(S.pay.transfer || 0), rest = r2(t - c - tr);
+  return rest < 0 ? `<span class="bad">Cash + transfer is ${money(-rest)} more than the total.</span>` : rest > 0 ? `Not yet received (credit): <b>${money(rest)}</b>` : 'Fully paid.';
+}
+function renderCart() {
+  const c = $('#cartCard'); if (!c) return;
+  if (!S.cart.length) { c.innerHTML = '<div class="cardhead"><h2>Cart</h2></div><div class="empty small">Tap a product above to add it to this sale.</div>'; return }
+  c.innerHTML = `<div class="cardhead"><h2>Cart</h2><button class="btn small ghost" data-act="clearcart">Clear</button></div>
+  ${S.cart.map((l, i) => `<div class="cline"><div class="cn">${esc(l.name)}${Number(l.price) !== Number(l.list) ? ' <span class="tag warn">price changed</span>' : ''}</div>
+   <div class="cq"><button class="btn small ghost" data-act="dec" data-i="${i}" aria-label="Less">−</button><input inputmode="numeric" value="${l.qty}" data-in="cqty" data-i="${i}" aria-label="Quantity"><button class="btn small ghost" data-act="inc" data-i="${i}" aria-label="More">+</button></div>
+   <div class="cp"><span class="muted">×</span><input inputmode="decimal" value="${l.price}" data-in="cprice" data-i="${i}" aria-label="Unit price"></div>
+   <div class="ca" id="ca${i}">${money((Number(l.qty) || 0) * (Number(l.price) || 0))}</div><button class="x" data-act="rm" data-i="${i}" aria-label="Remove">✕</button></div>`).join('')}
+  <input id="saleNote" class="search" placeholder="Note / customer name (optional)" value="${esc(S.saleNote || '')}" data-in="snote" autocomplete="off">
+  <div class="total"><span>Total</span><b id="cartTotal">${money(cartTotal())}</b></div>
+  <div class="chips" role="radiogroup" aria-label="Payment method">${[['cash', 'Cash'], ['transfer', 'Transfer'], ['credit', 'Credit (not paid yet)'], ['split', 'Split / part payment']].map(([k, t]) => `<button class="chip ${S.pay.mode === k ? 'on' : ''}" data-act="paymode" data-v="${k}" role="radio" aria-checked="${S.pay.mode === k}">${t}</button>`).join('')}</div>
+  ${S.pay.mode === 'split' ? `<div class="grid2"><div class="fld"><label>Cash part (₦)</label><input inputmode="decimal" value="${esc(S.pay.cash)}" data-in="psplit" data-f="cash"></div><div class="fld"><label>Transfer part (₦)</label><input inputmode="decimal" value="${esc(S.pay.transfer)}" data-in="psplit" data-f="transfer"></div></div>` : ''}
+  <p class="muted small" id="payHint">${payHint()}</p>
+  <button class="btn good block big" data-act="record">Record sale</button>`;
+}
+I.snote = el => { S.saleNote = el.value };
+I.cqty = el => { const l = S.cart[el.dataset.i]; if (l) { l.qty = el.value; refreshCartNums(el.dataset.i) } };
+I.cprice = el => { const l = S.cart[el.dataset.i]; if (l) { l.price = el.value; refreshCartNums(el.dataset.i) } };
+I.psplit = el => { S.pay[el.dataset.f] = el.value; const h = $('#payHint'); if (h) h.innerHTML = payHint() };
+function refreshCartNums(i) { const l = S.cart[i], a = $('#ca' + i); if (a) a.textContent = money((Number(l.qty) || 0) * (Number(l.price) || 0)); const t = $('#cartTotal'); if (t) t.textContent = money(cartTotal()); const h = $('#payHint'); if (h) h.innerHTML = payHint() }
+A.inc = el => { S.cart[el.dataset.i].qty = (Number(S.cart[el.dataset.i].qty) || 0) + 1; renderCart() };
+A.dec = el => { const l = S.cart[el.dataset.i]; l.qty = Math.max(1, (Number(l.qty) || 1) - 1); renderCart() };
+A.rm = el => { S.cart.splice(el.dataset.i, 1); renderCart() };
+A.clearcart = () => { S.cart = []; S.saleNote = ''; renderCart() };
+A.paymode = el => { S.pay.mode = el.dataset.v; renderCart() };
+A.record = el => busy(el, async () => {
+  if (!S.cart.length) return toast('Add at least one product.', 'bad');
+  const items = [];
+  for (const l of S.cart) {
+    const qty = Number(l.qty), price = r2(l.price);
+    if (!Number.isInteger(qty) || qty <= 0) return toast('Quantity for ' + l.name + ' must be a whole number above 0.', 'bad');
+    if (!Number.isFinite(price) || price < 0) return toast('Check the price for ' + l.name + '.', 'bad');
+    items.push({ product_id: l.pid, qty, unit_price: price, name: l.name });
+  }
+  const total = r2(items.reduce((n, i) => n + i.qty * i.unit_price, 0)); let cash = 0, transfer = 0, credit = 0; const m = S.pay.mode;
+  if (m === 'cash') cash = total; else if (m === 'transfer') transfer = total; else if (m === 'credit') credit = total;
+  else { cash = r2(S.pay.cash || 0); transfer = r2(S.pay.transfer || 0); credit = r2(total - cash - transfer); if (cash < 0 || transfer < 0 || credit < -0.004) return toast('Cash + transfer is more than the sale total.', 'bad'); if (credit < 0) credit = 0 }
+  const need = {}; items.forEach(i => need[i.product_id] = (need[i.product_id] || 0) + i.qty);
+  const over = Object.keys(need).map(id => S.products.find(p => p.product_id === id)).filter(p => p && need[p.product_id] > stockOf(p));
+  if (over.length && !await sure('Not enough stock according to the records:\n' + over.map(p => p.name + ' (' + stockOf(p) + ' in stock)').join('\n') + '\n\nRecord the sale anyway?', 'Record anyway')) return;
+  const sale = { id: uuid(), biz: S.biz.id, sold_on: saleDay(), cash, transfer, credit, items, note: (S.saleNote || '').trim() || null, at: Date.now(), status: 'pending' };
+  setQ([...getQ(), sale]); S.cart = []; S.saleNote = ''; S.pay = { mode: 'cash', cash: '', transfer: '' };
+  renderCart(); renderPlist(); renderTodaySales(); updatePill();
+  const sent = await flushQueue();
+  if (sent) toast('Sale recorded · ' + money(total), 'good'); else if (S.online) toast('Sale saved. Sending…'); else toast('Saved on this phone. It sends when you are back online.');
+});
+let tsSeq = 0;
+async function renderTodaySales() {
+  const seq = ++tsSeq, n = S.nav, box = $('#todaySales'); if (!box) return; const day = saleDay();
+  const pend = myQ().filter(q => q.status === 'pending' && q.sold_on === day).reverse();
+  let rows = null, err = '';
+  try { rows = await get('sales?select=id,payment,total,cash,transfer,credit,voided,void_reason,created_by,created_at,note,sale_items(qty,unit_price,price_changed,product_id)&business_id=eq.' + S.biz.id + '&sold_on=eq.' + day + '&order=created_at.desc&limit=200') }
+  catch (e) { err = e.offline ? 'You are offline — the list will load when you reconnect.' : e.message }
+  if (stale(n) || seq !== tsSeq) return; const b = $('#todaySales'); if (!b) return;
+  const pendHtml = pend.map(q => `<div class="srow pending"><div><b>${money(q.cash + q.transfer + q.credit)}</b> <span class="tag">waiting to send</span><br><small>${esc(q.items.map(i => i.qty + '× ' + i.name).join(', '))}</small></div><div class="muted small">${fmtTime(q.at)}</div></div>`).join('');
+  const html = (rows || []).map(s => { const flag = (s.sale_items || []).some(i => i.price_changed); return `<div class="srow ${s.voided ? 'void' : ''}"><div><b>${money(s.total)}</b> <span class="tag">${{ cash: 'Cash', transfer: 'Transfer', credit: 'Credit', split: 'Split' }[s.payment]}</span>${flag ? ' <span class="tag warn">price changed</span>' : ''}${s.voided ? ' <span class="tag bad">voided</span>' : ''}<br><small>${esc((s.sale_items || []).map(i => i.qty + '× ' + pName(i.product_id)).join(', '))}${s.note ? ' — ' + esc(s.note) : ''}</small>${s.voided ? `<br><small class="bad">Reason: ${esc(s.void_reason)}</small>` : ''}</div><div class="rt"><div class="muted small">${fmtTime(s.created_at)}${isMgr() ? '<br>' + esc(nameOf(s.created_by)) : ''}</div>${isMgr() && !s.voided ? `<button class="btn small ghost" data-act="voidsale" data-id="${s.id}">Void</button>` : ''}</div></div>` }).join('');
+  b.innerHTML = (err ? `<p class="muted">${esc(err)}</p>` : '') + pendHtml + (html || (pendHtml || err ? '' : '<div class="empty small">No sales yet for this day.</div>'));
+}
+A.voidsale = el => busy(el, async () => {
+  const v = await form('Void this sale', [{ k: 'reason', label: 'Reason (kept in the activity log)', req: true, placeholder: 'e.g. customer returned goods' }], 'Void sale', { danger: true, intro: 'The goods go back into stock and the sale stops counting in totals. It stays visible in the log.' });
+  if (!v) return; await rpc('void_sale', { p_sale: el.dataset.id, p_reason: v.reason }); toast('Sale voided', 'good'); await loadProducts(); if (S.tab === 'sell') { renderPlist(); renderTodaySales() }
+});
+
+/* ---------- STOCK ---------- */
+const canReceive = () => isMgr() || S.biz.staff_can_receive_stock;
+VIEWS.stock = function () {
+  const f = S.stockFilter;
+  $('#view').innerHTML = `<section class="card"><div class="cardhead"><h2>Stock</h2>${isMgr() ? '<button class="btn small primary" data-act="addprod">+ Add product</button>' : ''}</div>
+  <input class="search" type="search" id="ssearch" placeholder="Search stock…" value="${esc(f.q)}" data-in="ssearch" autocomplete="off">
+  <div class="chips"><button class="chip ${f.low ? 'on' : ''}" data-act="stocklow">Low stock only</button>${isMgr() ? `<button class="chip ${f.inactive ? 'on' : ''}" data-act="stockinactive">Show inactive</button>` : ''}</div>
+  <div id="slist"></div></section>`; renderStock();
+};
+I.ssearch = el => { S.stockFilter.q = el.value; renderStock() };
+A.stocklow = () => { S.stockFilter.low = !S.stockFilter.low; VIEWS.stock() };
+A.stockinactive = () => { S.stockFilter.inactive = !S.stockFilter.inactive; VIEWS.stock() };
+function renderStock() {
+  const b = $('#slist'); if (!b) return; const f = S.stockFilter, toks = f.q.toLowerCase().split(/\s+/).filter(Boolean);
+  const list = S.products.filter(p => (p.active || f.inactive) && toks.every(t => (p.name + ' ' + (p.category || '')).toLowerCase().includes(t)) && (!f.low || stockOf(p) <= 0 || (p.min_stock > 0 && stockOf(p) <= p.min_stock)));
+  if (!S.products.length) { b.innerHTML = `<div class="empty">No products yet.${isMgr() ? '<br>Tap <b>+ Add product</b>, or import your old backup from <b>More → Import</b>.' : ''}</div>`; return }
+  if (!list.length) { b.innerHTML = '<div class="empty">Nothing to show.</div>'; return }
+  const worth = isMgr() ? list.reduce((n, p) => n + Math.max(0, stockOf(p)) * Number(p.price), 0) : 0;
+  b.innerHTML = (isMgr() ? `<p class="muted small">${list.length} items · stock value at selling price: <b>${money(worth)}</b></p>` : '') + list.slice(0, 300).map(p => { const st = stockOf(p), low = st <= 0 || (p.min_stock > 0 && st <= p.min_stock); return `<div class="strow ${p.active ? '' : 'inactive'}"><div class="sti"><b>${esc(p.name)}</b>${p.category ? ` <span class="tag">${esc(p.category)}</span>` : ''}${p.active ? '' : ' <span class="tag bad">inactive</span>'}<br><small class="muted">${money(p.price)}${p.min_stock ? ' · alert at ' + p.min_stock : ''}</small></div><div class="stq ${low ? 'low' : ''}">${st}</div><div class="sta">${canReceive() ? `<button class="btn small ghost" data-act="receive" data-id="${p.product_id}">Receive</button>` : ''}${isMgr() ? `<button class="btn small ghost" data-act="adjust" data-id="${p.product_id}">Count</button><button class="btn small ghost" data-act="editprod" data-id="${p.product_id}">Edit</button>` : ''}</div></div>` }).join('');
+}
+const prodById = id => S.products.find(p => p.product_id === id);
+A.receive = el => busy(el, async () => {
+  const p = prodById(el.dataset.id); const v = await form('Receive stock: ' + p.name, [{ k: 'qty', label: 'Quantity received', type: 'number', req: true, min: 1, int: true, value: '' }, { k: 'note', label: 'Note (optional)', placeholder: 'e.g. 24 pieces bought from market' }], 'Add to stock'); if (!v) return;
+  await insert('stock_moves', [{ business_id: S.biz.id, product_id: p.product_id, qty: v.qty, kind: 'receipt', note: v.note || (v.qty + ' units received'), moved_on: today() }]); toast('Stock updated', 'good'); await loadProducts(); renderStock();
+});
+A.adjust = el => busy(el, async () => {
+  const p = prodById(el.dataset.id), cur = stockOf(p);
+  const v = await form('Stock count: ' + p.name, [{ k: 'counted', label: 'Counted quantity on the shelf', type: 'number', req: true, min: 0, int: true, value: cur }, { k: 'note', label: 'Reason', req: true, placeholder: 'e.g. physical count, damaged, expired' }], 'Save count', { intro: 'Records say <b>' + cur + '</b>. The difference is saved as an adjustment in the activity log.' }); if (!v) return;
+  const diff = v.counted - cur; if (diff === 0) return toast('No difference. Nothing changed.');
+  await insert('stock_moves', [{ business_id: S.biz.id, product_id: p.product_id, qty: diff, kind: 'adjust', note: v.note, moved_on: today() }]); toast('Stock corrected (' + (diff > 0 ? '+' : '') + diff + ')', 'good'); await loadProducts(); renderStock();
+});
+const prodFields = p => [{ k: 'name', label: 'Product name', req: true, value: p ? p.name : '' }, { k: 'price', label: 'Selling price (₦)', type: 'number', req: true, min: 0, value: p ? p.price : '' }, { k: 'cost', label: 'Cost price (₦, optional, for profit later)', type: 'number', min: 0, value: p ? (p.cost ?? 0) : 0 }, { k: 'min_stock', label: 'Low-stock alert at', type: 'number', min: 0, int: true, value: p ? p.min_stock : 5 }, { k: 'category', label: 'Category (optional)', value: p ? (p.category || '') : '' }];
+A.addprod = () => busy(null, async () => {
+  const v = await form('Add product', [...prodFields(null), { k: 'opening', label: 'Opening stock (how many you have now)', type: 'number', min: 0, int: true, value: 0 }], 'Add product'); if (!v) return;
+  const rows = await insert('products', [{ business_id: S.biz.id, name: v.name, category: v.category || null, price: r2(v.price), cost: r2(v.cost || 0), min_stock: v.min_stock || 0 }], true);
+  if (v.opening > 0) await insert('stock_moves', [{ business_id: S.biz.id, product_id: rows[0].id, qty: v.opening, kind: 'opening', note: 'Opening stock', moved_on: today() }]);
+  toast('Product added', 'good'); await loadProducts(); renderStock();
+});
+A.editprod = el => busy(el, async () => {
+  const p = prodById(el.dataset.id); const full = (await get('products?select=cost&id=eq.' + p.product_id))[0] || {}; p.cost = full.cost;
+  const v = await form('Edit product', [...prodFields(p), { k: 'active', label: 'Status', type: 'select', value: p.active ? 'yes' : 'no', options: [{ v: 'yes', t: 'Active (can be sold)' }, { v: 'no', t: 'Inactive (hidden from selling)' }] }], 'Save changes', { intro: 'Price changes are recorded in the activity log.' }); if (!v) return;
+  const rows = await patch('products', 'id=eq.' + p.product_id, { name: v.name, category: v.category || null, price: r2(v.price), cost: r2(v.cost || 0), min_stock: v.min_stock || 0, active: v.active === 'yes' });
+  if (!rows || !rows.length) throw new Error('You do not have permission to change products.');
+  toast('Saved', 'good'); await loadProducts(); renderStock();
+});
+
+/* ---------- EXPENSES ---------- */
+const canExpense = () => isMgr() || S.biz.staff_can_add_expenses;
+VIEWS.exp = async function () {
+  const n = S.nav;
+  $('#view').innerHTML = `<section class="card"><div class="cardhead"><h2>Expenses</h2></div>${canExpense() ? `<div class="grid2">${isMgr() ? `<div class="fld"><label>Date</label><input type="date" id="exDate" value="${today()}" max="${today()}"></div>` : ''}<div class="fld"><label>Amount (₦)</label><input id="exAmt" inputmode="decimal" placeholder="0.00"></div></div><div class="fld"><label>What was it for?</label><input id="exDesc" placeholder="e.g. transport to market" autocomplete="off"></div><div class="fld"><label>Paid from</label><select id="exMethod"><option value="cash">Cash</option><option value="transfer">Transfer</option><option value="other">Other</option></select></div><button class="btn good block" data-act="saveexp">Save expense</button>` : '<p class="muted">The owner has turned off expense entry for staff.</p>'}</section>
+  <section class="card"><div class="cardhead"><h2>${isMgr() ? 'Last 30 days' : 'Your expenses (last 30 days)'}</h2></div><div id="exList"><p class="muted">Loading…</p></div></section>`;
+  let rows = [], err = '';
+  try { rows = await get('expenses?select=id,spent_on,description,amount,method,voided,void_reason,created_by,created_at&business_id=eq.' + S.biz.id + '&spent_on=gte.' + addDays(today(), -30) + '&order=spent_on.desc,created_at.desc&limit=300') } catch (e) { err = e.offline ? 'You are offline — the list will load when you reconnect.' : e.message }
+  if (stale(n)) return; const b = $('#exList'); if (!b) return;
+  const tot = rows.filter(r => !r.voided).reduce((a, r) => a + Number(r.amount), 0);
+  b.innerHTML = err ? `<p class="muted">${esc(err)}</p>` : !rows.length ? '<div class="empty small">No expenses recorded.</div>' : `<p class="muted small">Total (not voided): <b>${money(tot)}</b></p>` + rows.map(r => `<div class="srow ${r.voided ? 'void' : ''}"><div><b>${money(r.amount)}</b> <span class="tag">${esc(r.method)}</span>${r.voided ? ' <span class="tag bad">voided</span>' : ''}<br><small>${esc(r.description)}${r.voided ? ' — voided: ' + esc(r.void_reason) : ''}</small></div><div class="rt"><div class="muted small">${esc(r.spent_on)}${isMgr() ? '<br>' + esc(nameOf(r.created_by)) : ''}</div>${isMgr() && !r.voided ? `<button class="btn small ghost" data-act="voidexp" data-id="${r.id}">Void</button>` : ''}</div></div>`).join('');
+};
+A.saveexp = el => busy(el, async () => {
+  const amt = r2($('#exAmt').value), desc = $('#exDesc').value.trim(), date = $('#exDate') ? $('#exDate').value : today();
+  if (!(amt > 0)) return toast('Enter an amount above 0.', 'bad'); if (!desc) return toast('Say what the expense was for.', 'bad');
+  await insert('expenses', [{ business_id: S.biz.id, spent_on: date || today(), description: desc, amount: amt, method: $('#exMethod').value }]); toast('Expense saved', 'good'); VIEWS.exp();
+});
+A.voidexp = el => busy(el, async () => {
+  const v = await form('Void this expense', [{ k: 'reason', label: 'Reason', req: true }], 'Void expense', { danger: true }); if (!v) return;
+  await rpc('void_expense', { p_expense: el.dataset.id, p_reason: v.reason }); toast('Expense voided', 'good'); VIEWS.exp();
+});
+
+/* ===================== Screens: Home (live), Reports, More, Team, Activity, Import, Account ===================== */
+
+/* ---------- HOME (owner / manager live view) ---------- */
+function rangeFor(k) {
+  const t = today();
+  if (k === 'today') return { k, from: t, to: t, label: 'Today' };
+  if (k === 'yest') return { k, from: addDays(t, -1), to: addDays(t, -1), label: 'Yesterday' };
+  if (k === 'week') return { k, from: addDays(t, -6), to: t, label: 'Last 7 days' };
+  if (k === 'month') return { k, from: t.slice(0, 8) + '01', to: t, label: 'This month' };
+  return null;
+}
+VIEWS.dash = async function (silent) {
+  const n = S.nav; if (!S.range) S.range = rangeFor('today'); const r = S.range, B = S.biz.id;
+  if (!silent) $('#view').innerHTML = '<section class="card"><p class="muted">Loading your business…</p></section>';
+  let sum, sales, err = '';
+  try {
+    [sum, sales] = await Promise.all([
+      rpc('daily_summary', { p_business: B, p_from: r.from, p_to: r.to }),
+      fetchAll('sales?select=id,sold_on,payment,total,created_by,created_at,voided,void_reason,note,sale_items(qty,price_changed,product_id)&business_id=eq.' + B + '&sold_on=gte.' + r.from + '&sold_on=lte.' + r.to + '&order=created_at.desc,id.asc'),
+      loadProducts(), loadMembers()]);
+  } catch (e) { err = e.offline ? 'You are offline. Live numbers need an internet connection.' : e.message }
+  if (stale(n)) return;
+  if (err) { if (!silent) $('#view').innerHTML = `<section class="card"><p class="err">${esc(err)}</p><button class="btn primary" data-act="goto" data-tab="dash">Try again</button></section>`; return }
+  const net = Number(sum.cash) + Number(sum.transfer) - Number(sum.expenses);
+  const live = sales.filter(s => !s.voided), by = {};
+  live.forEach(s => { const o = by[s.created_by] || (by[s.created_by] = { n: 0, t: 0 }); o.n++; o.t += Number(s.total) });
+  const low = S.products.filter(p => p.active && (stockOf(p) < 0 || (p.min_stock > 0 && stockOf(p) <= p.min_stock))).sort((a, b) => stockOf(a) - stockOf(b));
+  const neg = S.products.filter(p => p.active && stockOf(p) < 0);
+  const alerts = [];
+  if (Number(sum.voided_count)) alerts.push(`<b>${sum.voided_count}</b> voided sale(s) in this period`);
+  if (Number(sum.price_changed_lines)) alerts.push(`<b>${sum.price_changed_lines}</b> item line(s) sold at a different price than the list price`);
+  if (Number(sum.credit) > 0) alerts.push(`<b>${money(sum.credit)}</b> sold on credit and not yet received`);
+  if (neg.length) alerts.push(`<b>${neg.length}</b> product(s) show negative stock (records need checking)`);
+  const bad = getQ().filter(x => x.status === 'error').length; if (bad) alerts.push(`<b>${bad}</b> sale(s) on this phone could not be sent`);
+  const chip = (k, t) => `<button class="chip ${r.k === k ? 'on' : ''}" data-act="range" data-v="${k}">${t}</button>`;
+  $('#view').innerHTML = `<section class="card"><div class="cardhead"><h2>${esc(r.label)}</h2><span class="muted small">${silent ? 'Updated ' : 'Live · '}${fmtTime(Date.now())}</span></div>
+  <div class="chips">${chip('today', 'Today')}${chip('yest', 'Yesterday')}${chip('week', '7 days')}${chip('month', 'This month')}${chip('custom', 'Custom')}</div>
+  ${r.k === 'custom' ? `<div class="grid2"><div class="fld"><label>From</label><input type="date" id="cFrom" value="${r.from}" max="${today()}" data-in="crange"></div><div class="fld"><label>To</label><input type="date" id="cTo" value="${r.to}" max="${today()}" data-in="crange"></div></div>` : ''}
+  <div class="tiles"><div class="tile main"><small>Sales</small><b>${money(sum.sales_total)}</b><span>${sum.sales_count} sale(s) · ${sum.units_sold} units</span></div>
+  <div class="tile"><small>Cash in</small><b>${money(sum.cash)}</b></div><div class="tile"><small>Transfers in</small><b>${money(sum.transfer)}</b></div>
+  <div class="tile"><small>Expenses</small><b>${money(sum.expenses)}</b></div><div class="tile ${net < 0 ? 'neg' : ''}"><small>Net (received − expenses)</small><b>${money(net)}</b></div>
+  ${Number(sum.credit) > 0 ? `<div class="tile warn"><small>On credit (unpaid)</small><b>${money(sum.credit)}</b></div>` : ''}</div></section>
+  ${alerts.length ? `<section class="card alert"><div class="cardhead"><h2>Needs your attention</h2></div><ul class="alist">${alerts.map(a => `<li>${a}</li>`).join('')}</ul></section>` : ''}
+  <section class="card"><div class="cardhead"><h2>By person</h2></div>${Object.keys(by).length ? `<table class="mini"><tbody>${Object.entries(by).sort((a, b) => b[1].t - a[1].t).map(([u, o]) => `<tr><td>${esc(nameOf(u))}</td><td class="num">${o.n} sale(s)</td><td class="num"><b>${money(o.t)}</b></td></tr>`).join('')}</tbody></table>` : '<div class="empty small">No sales in this period.</div>'}</section>
+  <section class="card"><div class="cardhead"><h2>Low stock <span class="count">${low.length}</span></h2>${low.length ? '<button class="btn small ghost" data-act="lowstock">See all</button>' : ''}</div>${low.length ? low.slice(0, 6).map(p => `<div class="srow"><div>${esc(p.name)}</div><div class="stq low">${stockOf(p)}</div></div>`).join('') : '<div class="empty small">Nothing is running low.</div>'}</section>
+  <section class="card"><div class="cardhead"><h2>Latest sales</h2></div>${sales.slice(0, 15).map(s => `<div class="srow ${s.voided ? 'void' : ''}"><div><b>${money(s.total)}</b> <span class="tag">${{ cash: 'Cash', transfer: 'Transfer', credit: 'Credit', split: 'Split' }[s.payment]}</span>${(s.sale_items || []).some(i => i.price_changed) ? ' <span class="tag warn">price changed</span>' : ''}${s.voided ? ' <span class="tag bad">voided</span>' : ''}<br><small>${esc((s.sale_items || []).map(i => i.qty + '× ' + pName(i.product_id)).join(', '))}</small></div><div class="rt"><div class="muted small">${esc(nameOf(s.created_by))}<br>${esc(s.sold_on === today() ? fmtTime(s.created_at) : s.sold_on)}</div></div></div>`).join('') || '<div class="empty small">No sales in this period.</div>'}</section>`;
+};
+A.range = el => { const k = el.dataset.v; if (k === 'custom') S.range = { k, from: (S.range && S.range.from) || today(), to: (S.range && S.range.to) || today(), label: 'Custom range' }; else S.range = rangeFor(k); VIEWS.dash() };
+I.crange = () => { const f = $('#cFrom').value, t = $('#cTo').value; if (f && t && f <= t) { S.range = { k: 'custom', from: f, to: t, label: f + ' to ' + t }; VIEWS.dash() } };
+A.lowstock = () => { S.stockFilter.low = true; go('stock') };
+
+/* ---------- REPORTS ---------- */
+async function buildCloudModel(date, type) {
+  const B = S.biz.id, start = type === 'weekly' ? addDays(date, -6) : date;
+  const [prods, moves, sales, exps] = await Promise.all([
+    loadProducts(),
+    fetchAll('stock_moves?select=product_id,qty,kind,moved_on,note&business_id=eq.' + B + '&moved_on=lte.' + date + '&order=created_at.asc,id.asc'),
+    fetchAll('sales?select=id,total,cash,transfer,credit,sale_items(product_id,qty,amount)&business_id=eq.' + B + '&voided=eq.false&sold_on=gte.' + start + '&sold_on=lte.' + date + '&order=created_at.asc,id.asc'),
+    fetchAll('expenses?select=spent_on,description,amount,method&business_id=eq.' + B + '&voided=eq.false&spent_on=gte.' + start + '&spent_on=lte.' + date + '&order=spent_on.asc,created_at.asc,id.asc')]);
+  const open = {}, close = {}, recv = {}, notes = {}, sold = {}, amt = {};
+  const add = (o, k, v) => o[k] = (o[k] || 0) + v;
+  moves.forEach(m => { add(close, m.product_id, m.qty); if (m.moved_on < start) add(open, m.product_id, m.qty); else if (m.kind === 'receipt') { add(recv, m.product_id, m.qty); (notes[m.product_id] = notes[m.product_id] || []).push(m.note || (m.qty + ' received')) } });
+  let qty = 0, amount = 0, cash = 0, transfer = 0, credit = 0;
+  sales.forEach(s => { amount += Number(s.total); cash += Number(s.cash); transfer += Number(s.transfer); credit += Number(s.credit); (s.sale_items || []).forEach(i => { add(sold, i.product_id, i.qty); add(amt, i.product_id, Number(i.amount)); qty += i.qty }) });
+  const rows = prods.filter(p => p.active).map(p => {
+    const id = p.product_id, o = open[id] || 0, c = close[id] || 0, so = sold[id] || 0, rc = recv[id] || 0, other = c - o - rc + so;
+    let rem = (notes[id] || []).join('; '); if (other) rem += (rem ? '; ' : '') + 'Other stock changes: ' + (other > 0 ? '+' : '') + other;
+    return { name: p.name, open: o, close: c, sold: so, price: Number(p.price), amount: amt[id] || 0, remarks: rem, _keep: !!(o || c || so || amt[id] || rem || Number(p.price)) };
+  }).filter(r => r._keep);
+  rows.forEach((r, i) => { r.sn = i + 1; delete r._keep });
+  const expense = exps.reduce((n, e) => n + Number(e.amount), 0), received = cash + transfer;
+  return {
+    v: 1, title: type === 'weekly' ? 'WEEKLY STOCK AND SALES REPORT' : 'DAILY STOCK AND SALES REPORT', account: S.biz.name, type, start, end: date, prepared: S.myName, generated: stamp(), rows,
+    expenses: exps.map(e => ({ date: e.spent_on, description: e.description, method: e.method, amount: Number(e.amount) })),
+    totals: { qty, amount: r2(amount), cash: r2(cash), transfer: r2(transfer), received: r2(received), credit: r2(credit), expense: r2(expense), balance: r2(received - expense) }
+  };
+}
+VIEWS.rep = function () {
+  $('#view').innerHTML = `<section class="card"><div class="cardhead"><h2>Daily & weekly reports</h2></div>
+  <div class="grid2"><div class="fld"><label>Report type</label><select id="rType"><option value="daily">Daily report</option><option value="weekly">Weekly (7 days ending on the date)</option></select></div>
+  <div class="fld"><label>Date / week ending</label><input type="date" id="rDate" value="${today()}" max="${today()}"></div></div>
+  <button class="btn primary block" data-act="genrep">Generate report</button></section><div id="repOut"></div>`;
+};
+A.genrep = el => busy(el, async () => {
+  const out = $('#repOut'); out.innerHTML = '<section class="card"><p class="muted">Building the report…</p></section>';
+  const m = await buildCloudModel($('#rDate').value || today(), $('#rType').value); S.lastModel = m;
+  out.innerHTML = `<section class="card"><div class="actions"><button class="btn good" data-act="repview">Preview & save PDF</button><button class="btn ghost" data-act="repcsv">Export CSV</button></div><div class="reportwrap">${modelHtml(m)}</div></section>`;
+});
+A.repview = () => { if (S.lastModel) openPreview(S.lastModel, 'Report preview') };
+function downloadFile(name, content, type) {
+  const blob = new Blob([content], { type }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = name; a.style.display = 'none'; document.body.appendChild(a); a.click();
+  setTimeout(() => { a.remove(); URL.revokeObjectURL(url) }, 60000);
+}
+A.repcsv = () => {
+  const m = S.lastModel; if (!m) return; const q = x => '"' + String(x ?? '').replace(/"/g, '""') + '"';
+  const rows = [['S/N', 'Description', 'Opening Stock', 'Closing Stock', 'Qty Sold', 'Unit Price', 'Amount', 'Remarks'], ...m.rows.map(r => [r.sn, r.name, r.open, r.close, r.sold, r.price, r.amount, r.remarks])];
+  downloadFile(m.account.replace(/[^a-z0-9]+/gi, '_') + '_' + m.type + '_' + m.end + '.csv', '﻿' + rows.map(r => r.map(q).join(',')).join('\r\n'), 'text/csv;charset=utf-8');
+  toast('CSV requested. Check Downloads.');
+};
+
+/* ---------- MORE ---------- */
+VIEWS.more = function () {
+  const row = (tab, t, d) => `<button class="bigbtn" data-act="goto" data-tab="${tab}"><b>${t}</b><span>${d}</span></button>`;
+  $('#view').innerHTML = `<section class="card"><div class="cardhead"><h2>More</h2></div>${row('exp', 'Expenses', 'Record and review money spent')}${row('team', 'Team & invites', S.role === 'owner' ? 'Invite staff, manage who has access' : 'Invite staff')}${S.role === 'owner' ? row('act', 'Activity log', 'Who did what and when') + row('imp', 'Import old backup', 'Bring in your Smart Store Manager records') : ''}${row('acct', 'Account & help', 'Sign out, connection check, install')}</section>`;
+};
+
+/* ---------- TEAM ---------- */
+VIEWS.team = async function () {
+  const n = S.nav; $('#view').innerHTML = '<section class="card"><p class="muted">Loading…</p></section>'; let inv = [], err = '';
+  try { await loadMembers(); inv = await get('invites?select=code,role,created_at,expires_at&business_id=eq.' + S.biz.id + '&used_at=is.null&expires_at=gt.' + encodeURIComponent(new Date().toISOString()) + '&order=created_at.desc') } catch (e) { err = e.offline ? 'You are offline.' : e.message }
+  if (stale(n)) return;
+  $('#view').innerHTML = `<section class="card"><div class="cardhead"><h2>Invite someone</h2></div><p class="muted small">Staff install the app, create an account, then enter your code. Each code works once and lasts 7 days.</p><button class="btn primary block" data-act="newinvite">Create invite code</button>${err ? `<p class="err">${esc(err)}</p>` : ''}
+  ${inv.length ? `<h3>Waiting to be used</h3>${inv.map(i => `<div class="srow"><div><b class="code">${esc(i.code)}</b> <span class="tag">${esc(i.role)}</span></div><div class="rt"><button class="btn small ghost" data-act="sharecode" data-code="${esc(i.code)}" data-role="${esc(i.role)}">Share</button></div></div>`).join('')}` : ''}</section>
+  <section class="card"><div class="cardhead"><h2>People with access</h2></div>${S.members.map(m => `<div class="srow ${m.active ? '' : 'void'}"><div><b>${esc(m.display_name)}</b> <span class="tag">${ROLE_LABEL[m.role]}</span>${m.user_id === uid() ? ' <span class="tag">you</span>' : ''}${m.active ? '' : ' <span class="tag bad">no access</span>'}</div><div class="rt">${S.role === 'owner' && m.role !== 'owner' ? `<button class="btn small ghost" data-act="mtoggle" data-u="${m.user_id}" data-active="${m.active}">${m.active ? 'Remove access' : 'Restore'}</button><button class="btn small ghost" data-act="mrole" data-u="${m.user_id}" data-role="${m.role}">${m.role === 'staff' ? 'Make manager' : 'Make staff'}</button>` : ''}</div></div>`).join('')}</section>
+  ${S.role === 'owner' ? `<section class="card"><div class="cardhead"><h2>What staff may do</h2></div><label class="chk"><input type="checkbox" id="setRecv" ${S.biz.staff_can_receive_stock ? 'checked' : ''} data-in="setting" data-f="staff_can_receive_stock"> Receive new stock</label><label class="chk"><input type="checkbox" id="setExp" ${S.biz.staff_can_add_expenses ? 'checked' : ''} data-in="setting" data-f="staff_can_add_expenses"> Record expenses</label><p class="muted small">Staff can always record sales. They only ever see their own sales and expenses. Voiding, price changes, reports and this page are for managers and the owner.</p></section>` : ''}`;
+};
+A.newinvite = el => busy(el, async () => {
+  let role = 'staff';
+  if (S.role === 'owner') { const v = await form('Create invite', [{ k: 'role', label: 'Role', type: 'select', value: 'staff', options: [{ v: 'staff', t: 'Staff — records sales and stock' }, { v: 'manager', t: 'Manager — also sees reports and voids sales' }] }], 'Create code'); if (!v) return; role = v.role }
+  const code = await rpc('create_invite', { p_business: S.biz.id, p_role: role }); await shareCode(code, role); VIEWS.team();
+});
+A.sharecode = el => shareCode(el.dataset.code, el.dataset.role);
+async function shareCode(code, role) {
+  const url = location.origin + location.pathname.replace(/index\.html$/, '');
+  const msg = `Join ${S.biz.name} on Smart Store Cloud.\n1) Open ${url}\n2) Tap “Create account”\n3) Tap “I was invited by my boss” and enter this code: ${code}\n(Code works once, valid 7 days.)`;
+  await showInfo(`<h3>Invite code</h3><div class="bigcode">${esc(code)}</div><p class="muted small">${esc(ROLE_LABEL[role] || role)} · works once · valid 7 days</p><div class="actions"><a class="btn good" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(msg)}">Send on WhatsApp</a><button class="btn ghost" type="button" id="cpInv">Copy message</button></div><p class="muted small" id="cpMsg"></p>`.replace('</div><p class="muted small" id="cpMsg">', '</div><p class="muted small" id="cpMsg">'));
+}
+document.addEventListener('click', e => {
+  if (e.target && e.target.id === 'cpInv') { const code = $('.bigcode').textContent, msg = `Join ${S.biz.name} on Smart Store Cloud.\nOpen ${location.origin + location.pathname.replace(/index\.html$/, '')}, tap “Create account”, then “I was invited by my boss” and enter this code: ${code}\n(Works once, valid 7 days.)`; (navigator.clipboard ? navigator.clipboard.writeText(msg) : Promise.reject()).then(() => $('#cpMsg').textContent = 'Message copied.', () => { $('#cpMsg').textContent = 'Could not copy. Tell them the code: ' + code }) }
+});
+A.mtoggle = el => busy(el, async () => {
+  const on = el.dataset.active === 'true'; if (!await sure(on ? 'Remove this person’s access? They can no longer sign in to this business. Their past records stay.' : 'Restore this person’s access?', on ? 'Remove access' : 'Restore', on)) return;
+  const rows = await patch('members', 'business_id=eq.' + S.biz.id + '&user_id=eq.' + el.dataset.u, { active: !on }); if (!rows.length) throw new Error('Not allowed.'); toast('Updated', 'good'); VIEWS.team();
+});
+A.mrole = el => busy(el, async () => {
+  const to = el.dataset.role === 'staff' ? 'manager' : 'staff'; if (!await sure('Change this person to ' + to + '?', 'Change')) return;
+  const rows = await patch('members', 'business_id=eq.' + S.biz.id + '&user_id=eq.' + el.dataset.u, { role: to }); if (!rows.length) throw new Error('Not allowed.'); toast('Updated', 'good'); VIEWS.team();
+});
+I.setting = async el => { try { const rows = await patch('businesses', 'id=eq.' + S.biz.id, { [el.dataset.f]: el.checked }); if (!rows.length) throw new Error('Not allowed'); S.biz[el.dataset.f] = el.checked; toast('Saved', 'good') } catch (e) { el.checked = !el.checked; toast(e.message, 'bad') } };
+
+/* ---------- ACTIVITY LOG (owner) ---------- */
+function describe(r) {
+  const n = r.new_row || {}, o = r.old_row || {}, t = r.table_name, a = r.action;
+  if (t === 'sale_items') return null;
+  if (t === 'sales' && a === 'INSERT') return ['sale', `recorded a sale of ${money(n.total)} (${n.payment})`];
+  if (t === 'sales' && a === 'UPDATE' && n.voided && !o.voided) return ['void', `voided a sale of ${money(n.total)}. Reason: “${n.void_reason}”`];
+  if (t === 'expenses' && a === 'INSERT') return ['exp', `added expense ${money(n.amount)}: ${n.description}`];
+  if (t === 'expenses' && a === 'UPDATE' && n.voided && !o.voided) return ['xvoid', `voided expense ${money(n.amount)}. Reason: “${n.void_reason}”`];
+  if (t === 'products' && a === 'INSERT') return ['padd', `added product “${n.name}” at ${money(n.price)}`];
+  if (t === 'products' && a === 'UPDATE') { const c = []; if (Number(n.price) !== Number(o.price)) c.push(`price of “${n.name}” ${money(o.price)} → ${money(n.price)}`); if (n.name !== o.name) c.push(`renamed “${o.name}” → “${n.name}”`); if (n.active !== o.active) c.push(`“${n.name}” ${n.active ? 'made active' : 'made inactive'}`); if (n.min_stock !== o.min_stock) c.push(`alert level of “${n.name}” ${o.min_stock} → ${n.min_stock}`); if (Number(n.cost) !== Number(o.cost)) c.push(`cost of “${n.name}” changed`); return c.length ? ['pedit' + c.length, 'changed ' + c.join('; ')] : null }
+  if (t === 'stock_moves' && a === 'INSERT') { const nm = pName(n.product_id); if (n.kind === 'receipt') return ['recv', `received ${n.qty} × ${nm}`]; if (n.kind === 'adjust') return ['adj', `adjusted stock of ${nm} by ${n.qty > 0 ? '+' : ''}${n.qty} (${n.note || 'no note'})`]; if (n.kind === 'opening') return ['open', `set opening stock of ${nm} to ${n.qty}`]; return null }
+  if (t === 'members') { if (a === 'INSERT') return ['join', `${n.display_name} joined as ${n.role}`]; if (a === 'UPDATE') { const c = []; if (n.role !== o.role) c.push(`${n.display_name} is now ${n.role}`); if (n.active !== o.active) c.push(n.active ? `${n.display_name} restored` : `${n.display_name} lost access`); return c.length ? ['mem', c.join('; ')] : null } }
+  if (t === 'invites' && a === 'INSERT') return ['inv', `created a ${n.role} invite`];
+  if (t === 'invites') return null;
+  if (t === 'businesses' && a === 'UPDATE') return ['biz', 'changed business settings'];
+  return null;
+}
+VIEWS.act = async function () {
+  const n = S.nav; $('#view').innerHTML = '<section class="card"><p class="muted">Loading…</p></section>'; let rows = [], err = '';
+  try { await loadProducts(); await loadMembers(); rows = await get('audit_log?select=at,user_id,action,table_name,old_row,new_row&business_id=eq.' + S.biz.id + '&order=at.desc,id.desc&limit=400') } catch (e) { err = e.offline ? 'You are offline.' : e.message }
+  if (stale(n)) return; const ents = [];
+  rows.forEach(r => { const d = describe(r); if (!d) return; const t = new Date(r.at).getTime(), p = ents[ents.length - 1]; if (p && p.key === d[0] && p.user === r.user_id && Math.abs(p.t - t) < 120000) p.count++; else ents.push({ key: d[0], user: r.user_id, t, at: r.at, text: d[1], count: 1 }) });
+  $('#view').innerHTML = `<section class="card"><div class="cardhead"><h2>Activity log</h2></div><p class="muted small">Every change, with who made it. This cannot be edited or deleted by anyone.</p>${err ? `<p class="err">${esc(err)}</p>` : ''}${ents.length ? ents.slice(0, 200).map(e => `<div class="arow"><div class="at">${esc(fmtDT(e.at))}</div><div><b>${esc(nameOf(e.user))}</b> ${esc(e.text)}${e.count > 1 ? ` <span class="tag">+${e.count - 1} similar</span>` : ''}</div></div>`).join('') : (err ? '' : '<div class="empty">Nothing yet.</div>')}</section>`;
+};
+
+/* ---------- IMPORT old Smart Store Manager backup (owner) ---------- */
+let impData = null;
+VIEWS.imp = async function () {
+  impData = null;
+  $('#view').innerHTML = `<section class="card"><div class="cardhead"><h2>Import old records</h2></div>
+  <p class="muted">Bring your products, stock, sales and expenses from the old Smart Store Manager into <b>${esc(S.biz.name)}</b>. Your old app is never changed.</p>
+  <div class="alert"><b>Before you start</b><br>Use a business with no products yet. If your old app had two accounts (for example General Store and Bookstore), create a separate business for each and import one account into each.</div>
+  <div class="fld"><label for="impFile">Choose the backup file (.json)</label><input id="impFile" type="file" accept=".json,application/json,text/json,text/plain" data-in="impfile"></div>
+  <details><summary class="muted">File picker not working? Paste the backup text instead</summary><textarea id="impText" rows="5" placeholder="Paste the full backup text here"></textarea><button class="btn ghost" data-act="imptext">Use pasted text</button></details>
+  <div id="impBox"></div></section>`;
+};
+I.impfile = el => { const f = el.files && el.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => parseBackup(String(rd.result || '')); rd.onerror = () => toast('Could not read that file.', 'bad'); rd.readAsText(f) };
+A.imptext = () => parseBackup($('#impText').value);
+function parseBackup(text) {
+  const box = $('#impBox'); let d;
+  try { d = JSON.parse(text.replace(/^﻿/, '').trim()) } catch (e) { box.innerHTML = '<p class="err">That is not a valid backup file. Choose the .json file exported from the old app.</p>'; return }
+  if (!d || !Array.isArray(d.products) || !Array.isArray(d.sales) || !Array.isArray(d.expenses)) { box.innerHTML = '<p class="err">This does not look like a Smart Store Manager backup (missing products, sales or expenses).</p>'; return }
+  d.receipts = Array.isArray(d.receipts) ? d.receipts : []; impData = d;
+  const accts = [...new Set(d.products.map(p => p.account))];
+  box.innerHTML = `<h3>What is inside</h3><div class="chips" role="radiogroup">${accts.map((a, i) => { const ps = d.products.filter(p => p.account === a).length, ss = d.sales.filter(s => s.account === a).length, ex = d.expenses.filter(e => e.account === a).length; return `<button class="chip ${i === 0 ? 'on' : ''}" data-act="impacct" data-v="${esc(a)}">${esc(a)}: ${ps} products, ${ss} sales, ${ex} expenses</button>` }).join('')}</div>
+  <p class="muted small">Choose the account to import into <b>${esc(S.biz.name)}</b>.</p><button class="btn primary block" data-act="impgo" id="impGo" data-acct="${esc(accts[0])}">Import ${esc(accts[0])}</button><p class="muted small" id="impProg"></p>`;
+}
+A.impacct = el => { $$('#impBox .chip').forEach(c => c.classList.toggle('on', c === el)); const g = $('#impGo'); g.dataset.acct = el.dataset.v; g.textContent = 'Import ' + el.dataset.v };
+A.impgo = el => busy(el, async () => {
+  const acct = el.dataset.acct, d = impData, B = S.biz.id, prog = t => $('#impProg').textContent = t;
+  await loadProducts(); const exist = await get('sales?select=id&business_id=eq.' + B + '&limit=1');
+  const key = 'ssc_imp_' + B + '_' + acct, st = LS.get(key, { products: null, stage: 0, sales: {} });
+  if ((S.products.length || exist.length) && !st.products) return toast('This business already has records. Import only works into an empty business. Create a new business for this account.', 'bad');
+  if (!await sure(`Import "${acct}" into ${S.biz.name}?\n\nThis adds ${d.products.filter(p => p.account === acct).length} products and ${d.sales.filter(s => s.account === acct).length} sales. It cannot be undone, but your old app stays untouched.`, 'Import now')) return;
+  const ps = d.products.filter(p => p.account === acct), valid = new Set(ps.map(p => p.id));
+  const sales = d.sales.filter(s => s.account === acct && valid.has(s.productId) && Number(s.qty) > 0 && Number(s.price) >= 0), recs = d.receipts.filter(r => r.account === acct && valid.has(r.productId) && Number(r.qty) > 0), exps = d.expenses.filter(e => e.account === acct && Number(e.amount) > 0);
+  const dates = [...sales.map(s => s.date), ...recs.map(r => r.date), ...exps.map(e => e.date)].filter(Boolean).sort(), openOn = dates.length ? addDays(dates[0], -1) : today();
+  if (!st.products) { // stage 1: products (one atomic request)
+    prog('Importing products…');
+    const rows = await insert('products', ps.map(p => ({ business_id: B, name: String(p.name || 'Item').slice(0, 200), category: null, price: r2(Math.max(0, Number(p.price) || 0)), min_stock: Math.max(0, Math.round(Number(p.minimum) || 0)) })), true);
+    if (rows.length !== ps.length) throw new Error('Product import count mismatch. Nothing further was imported.');
+    st.products = {}; ps.forEach((p, i) => st.products[p.id] = rows[i].id); LS.set(key, st);
+  }
+  if (st.stage < 1) { prog('Importing opening stock…'); const o = ps.filter(p => Number(p.opening) > 0).map(p => ({ business_id: B, product_id: st.products[p.id], qty: Math.round(Number(p.opening)), kind: 'opening', note: 'Imported opening stock', moved_on: openOn })); if (o.length) await insert('stock_moves', o); st.stage = 1; LS.set(key, st) }
+  if (st.stage < 2) { prog('Importing stock received…'); const r = recs.map(x => ({ business_id: B, product_id: st.products[x.productId], qty: Math.round(Number(x.qty)), kind: 'receipt', note: x.remark || 'Imported', moved_on: x.date })); if (r.length) await insert('stock_moves', r); st.stage = 2; LS.set(key, st) }
+  for (let i = 0; i < sales.length; i++) { // stage 3: sales, one by one. Each has a fixed id, so a retry never duplicates.
+    const s = sales[i]; const sid = st.sales[s.id] || (st.sales[s.id] = uuid()); if (st.sales[s.id + ':done']) continue; prog(`Importing sales… ${i + 1} of ${sales.length}`);
+    const amount = r2(Number(s.qty) * Number(s.price)), cash = r2(Number(s.cash) || 0), tr = r2(Number(s.transfer) || 0), credit = r2(amount - cash - tr);
+    for (let tries = 0; ; tries++) { try { await rpc('record_sale', { p_id: sid, p_business: B, p_sold_on: s.date, p_cash: cash, p_transfer: tr, p_credit: Math.max(0, credit), p_items: [{ product_id: st.products[s.productId], qty: Math.round(Number(s.qty)), unit_price: r2(Number(s.price)) }], p_note: 'Imported' }); break } catch (e) { if (tries >= 2 || (e.status >= 400 && e.status < 500 && e.status !== 429)) throw e; await new Promise(r => setTimeout(r, 800)) } }
+    st.sales[s.id + ':done'] = 1; if (i % 10 === 9) LS.set(key, st);
+  }
+  if (st.stage < 3) { prog('Importing expenses…'); const x = exps.map(e => ({ business_id: B, spent_on: e.date, description: String(e.description || 'Expense').slice(0, 300), amount: r2(e.amount), method: ['cash', 'transfer', 'other'].includes(String(e.method).toLowerCase()) ? String(e.method).toLowerCase() : 'other' })); if (x.length) await insert('expenses', x); st.stage = 3; LS.set(key, st) }
+  prog('Checking…'); await loadProducts(); const back = await fetchAll('sales?select=total,voided&business_id=eq.' + B + '&order=id.asc'); const t = back.filter(x => !x.voided).reduce((n, x) => n + Number(x.total), 0), want = r2(sales.reduce((n, s) => n + Number(s.qty) * Number(s.price), 0));
+  await showInfo(`<h3>Import finished</h3><p>${S.products.length} products and ${back.length} sales are now in <b>${esc(S.biz.name)}</b>.</p><p class="muted">Sales total in the new system: <b>${money(t)}</b><br>Sales total in your backup: <b>${money(want)}</b></p>${Math.abs(t - want) < 0.01 ? '<p class="good">✓ The totals match exactly.</p>' : '<p class="err">The totals do not match. Do not rely on these records yet and tell your developer.</p>'}`);
+  go('dash');
+});
+
+/* ---------- ACCOUNT ---------- */
+let installEvt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; if (S.tab === 'acct') VIEWS.acct() });
+VIEWS.acct = function () {
+  const bad = myQ().filter(x => x.status === 'error').length;
+  $('#view').innerHTML = `<section class="card"><div class="cardhead"><h2>Account</h2></div><div class="kv"><span>Name</span><b>${esc(S.myName)}</b><span>Email</span><b>${esc(session.user.email)}</b><span>Business</span><b>${esc(S.biz.name)}</b><span>Your role</span><b>${ROLE_LABEL[S.role]}</b><span>App version</span><b>${APP_VERSION}</b></div>
+  ${installEvt ? '<button class="btn good block" data-act="install">Install app on this phone</button>' : '<p class="muted small">To install: in Chrome tap ⋮ then “Install app” or “Add to Home screen”.</p>'}
+  <button class="btn ghost block" data-act="conncheck">Run connection check</button><pre id="connOut" class="pre hidden"></pre>
+  ${S.role === 'owner' || S.memberships.length ? '<button class="btn ghost block" data-act="newbiz">Create another business</button>' : ''}
+  ${bad ? queueBanner() : ''}
+  <button class="btn danger block" data-act="signout">Sign out</button></section>`;
+};
+A.install = async () => { if (!installEvt) return; installEvt.prompt(); await installEvt.userChoice.catch(() => { }); installEvt = null; VIEWS.acct() };
+A.newbiz = () => busy(null, async () => {
+  const v = await form('Create another business', [{ k: 'name', label: 'Business name', req: true }, { k: 'me', label: 'Your name', req: true, value: S.myName }], 'Create'); if (!v) return;
+  const nid = await rpc('create_business', { p_name: v.name, p_display_name: v.me }); LS.set('ssc_biz_' + uid(), nid); toast('Created', 'good'); await boot();
+});
+A.conncheck = el => busy(el, async () => {
+  const out = $('#connOut'); out.classList.remove('hidden'); const L = []; const show = () => out.textContent = L.join('\n');
+  const step = async (name, fn) => { try { const v = await fn(); L.push('✓ ' + name + (v ? ' — ' + v : '')) } catch (e) { L.push('✗ ' + name + ' — ' + (e.message || e)) } show() };
+  L.push('Internet: ' + (navigator.onLine ? 'connected' : 'OFFLINE')); show();
+  await step('Server reachable', async () => { const r = await rawFetch('/rest/v1/', { auth: false }); return 'HTTP ' + r.status });
+  await step('Signed in', async () => { const r = await rawFetch('/auth/v1/user'); if (!r.ok) throw new Error('HTTP ' + r.status); const j = await r.json(); return j.email });
+  await step('Business membership', async () => { const r = await get('members?select=role&user_id=eq.' + uid() + '&business_id=eq.' + S.biz.id); return r.length ? r[0].role : (() => { throw new Error('none') })() });
+  await step('Products readable', async () => { const r = await get('product_stock?select=product_id&business_id=eq.' + S.biz.id + '&limit=1'); return 'ok' });
+  if (isMgr()) await step('Live summary', async () => { const s = await rpc('daily_summary', { p_business: S.biz.id, p_from: today(), p_to: today() }); return 'today sales ' + money(s.sales_total) });
+  L.push('Sales waiting on this phone: ' + getQ().filter(x => x.status === 'pending').length); L.push('Version ' + APP_VERSION); show();
+});
+
+/* ---------- global wiring ---------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return; const f = A[el.dataset.act]; if (!f) return;
+  e.preventDefault(); Promise.resolve().then(() => f(el, e)).catch(err => { if (err && err.signedOut) { saveSession(null); showAuth('in', err.message) } else toast((err && err.message) || 'Something went wrong', 'bad') });
+});
+document.addEventListener('input', e => { const el = e.target.closest('[data-in]'); if (el && I[el.dataset.in] && el.type !== 'checkbox' && el.type !== 'file' && el.type !== 'date') I[el.dataset.in](el) });
+document.addEventListener('change', e => { const el = e.target.closest('[data-in]'); if (el && I[el.dataset.in] && (el.type === 'checkbox' || el.type === 'file' || el.type === 'date')) I[el.dataset.in](el); if (e.target.id === 'bizSel') { LS.set('ssc_biz_' + uid(), e.target.value); boot() } });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.closest('#auth') && $('#aGo')) { e.preventDefault(); $('#aGo').click() } });
+window.addEventListener('error', e => { try { toast('Error: ' + (e.message || 'unknown'), 'bad') } catch (x) { } });
+window.addEventListener('unhandledrejection', e => { try { const m = e.reason && e.reason.message; if (m && !/No internet/.test(m)) toast(m, 'bad') } catch (x) { } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && session && S.biz) { flushQueue(); if (S.tab === 'dash') VIEWS.dash(true) } });
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) navigator.serviceWorker.register('sw.js').catch(() => { });
+boot();
+
+</script></body></html>
