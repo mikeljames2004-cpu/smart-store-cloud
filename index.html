@@ -914,9 +914,10 @@ function parseBackup(text) {
   d.receipts = Array.isArray(d.receipts) ? d.receipts : []; impData = d;
   const accts = [...new Set(d.products.map(p => p.account))];
   box.innerHTML = `<h3>What is inside</h3><div class="chips" role="radiogroup">${accts.map((a, i) => { const ps = d.products.filter(p => p.account === a).length, ss = d.sales.filter(s => s.account === a).length, ex = d.expenses.filter(e => e.account === a).length; return `<button class="chip ${i === 0 ? 'on' : ''}" data-act="impacct" data-v="${esc(a)}">${esc(a)}: ${ps} products, ${ss} sales, ${ex} expenses</button>` }).join('')}</div>
-  <p class="muted small">Choose the account to import into <b>${esc(S.biz.name)}</b>.</p><button class="btn primary block" data-act="impgo" id="impGo" data-acct="${esc(accts[0])}">Import ${esc(accts[0])}</button><p class="muted small" id="impProg"></p>`;
+  <p class="muted small">Choose the account to import into <b>${esc(S.biz.name)}</b>.</p><button class="btn primary block" data-act="impgo" id="impGo" data-acct="${esc(accts[0])}">Import ${esc(accts[0])} (empty business only)</button>
+  <button class="btn ghost block" data-act="impnew" id="impNew" data-acct="${esc(accts[0])}">Add only the newer records to this business</button><p class="muted small">Use the second button when this business already has an earlier import and this file is a newer backup. It adds only what is missing and never doubles anything.</p><p class="muted small" id="impProg"></p>`;
 }
-A.impacct = el => { $$('#impBox .chip').forEach(c => c.classList.toggle('on', c === el)); const g = $('#impGo'); g.dataset.acct = el.dataset.v; g.textContent = 'Import ' + el.dataset.v };
+A.impacct = el => { $$('#impBox .chip').forEach(c => c.classList.toggle('on', c === el)); const g = $('#impGo'); g.dataset.acct = el.dataset.v; g.textContent = 'Import ' + el.dataset.v + ' (empty business only)'; $('#impNew').dataset.acct = el.dataset.v };
 A.impgo = el => busy(el, async () => {
   const acct = el.dataset.acct, d = impData, B = S.biz.id, prog = t => $('#impProg').textContent = t;
   await loadProducts(); const exist = await get('sales?select=id&business_id=eq.' + B + '&limit=1');
@@ -943,6 +944,60 @@ A.impgo = el => busy(el, async () => {
   if (st.stage < 3) { prog('Importing expenses…'); const x = exps.map(e => ({ business_id: B, spent_on: e.date, description: String(e.description || 'Expense').slice(0, 300), amount: r2(e.amount), method: ['cash', 'transfer', 'other'].includes(String(e.method).toLowerCase()) ? String(e.method).toLowerCase() : 'other' })); if (x.length) await insert('expenses', x); st.stage = 3; LS.set(key, st) }
   prog('Checking…'); await loadProducts(); const back = await fetchAll('sales?select=total,voided&business_id=eq.' + B + '&order=id.asc'); const t = back.filter(x => !x.voided).reduce((n, x) => n + Number(x.total), 0), want = r2(sales.reduce((n, s) => n + Number(s.qty) * Number(s.price), 0));
   await showInfo(`<h3>Import finished</h3><p>${S.products.length} products and ${back.length} sales are now in <b>${esc(S.biz.name)}</b>.</p><p class="muted">Sales total in the new system: <b>${money(t)}</b><br>Sales total in your backup: <b>${money(want)}</b></p>${Math.abs(t - want) < 0.01 ? '<p class="good">✓ The totals match exactly.</p>' : '<p class="err">The totals do not match. Do not rely on these records yet and tell your developer.</p>'}`);
+  go('dash');
+});
+
+
+/* ---- add only the NEWER records from a later backup (safe to repeat: it compares with what is already stored) ---- */
+const ms = (m, k, n = 1) => m[k] = (m[k] || 0) + n;
+A.impnew = el => busy(el, async () => {
+  const acct = el.dataset.acct, d = impData, B = S.biz.id, prog = t => $('#impProg').textContent = t;
+  prog('Comparing with what is already stored…'); await loadProducts();
+  const fps = d.products.filter(p => p.account === acct); if (!fps.length) return toast('No products for that account in the file.', 'bad');
+  const fname = {}; fps.forEach(p => fname[p.id] = p);
+  // products already in the business, by name (duplicates told apart by price)
+  const byName = {}; S.products.forEach(p => (byName[p.name] = byName[p.name] || []).push(p));
+  const match = fp => { const c = byName[fp.name] || []; if (c.length <= 1) return c[0] || null; const x = c.filter(p => Number(p.price) === Number(fp.price)); return x.length === 1 ? x[0] : 'ambiguous' };
+  const map = {}, missing = []; for (const fp of fps) { const m = match(fp); if (m === 'ambiguous') return toast('Two products named "' + fp.name + '" cannot be told apart. Nothing was imported.', 'bad'); if (m) map[fp.id] = m.product_id; else missing.push(fp) }
+  const fsales = d.sales.filter(s => s.account === acct && fname[s.productId] && Number(s.qty) > 0 && Number(s.price) >= 0), frecs = d.receipts.filter(r => r.account === acct && fname[r.productId] && Number(r.qty) > 0), fexps = d.expenses.filter(e => e.account === acct && Number(e.amount) > 0);
+  const [dbSales, dbMoves, dbExps] = await Promise.all([
+    fetchAll('sales?select=id,sold_on,cash,transfer,sale_items(product_id,qty,unit_price)&business_id=eq.' + B + '&order=id.asc'),
+    fetchAll('stock_moves?select=id,product_id,qty,kind,moved_on&business_id=eq.' + B + '&kind=eq.receipt&order=id.asc'),
+    fetchAll('expenses?select=id,spent_on,description,amount&business_id=eq.' + B + '&order=id.asc')]);
+  const pn = {}; S.products.forEach(p => pn[p.product_id] = p.name);
+  const sKey = (day, name, qty, price, cash, tr) => [day, name, Math.round(qty), r2(price), r2(cash), r2(tr)].join('|');
+  const have = {}; dbSales.forEach(x => (x.sale_items || []).length === 1 && ms(have, sKey(x.sold_on, pn[x.sale_items[0].product_id], x.sale_items[0].qty, x.sale_items[0].unit_price, x.cash, x.transfer)));
+  const newSales = []; fsales.forEach(x => { const k = sKey(x.date, fname[x.productId].name, x.qty, x.price, x.cash || 0, x.transfer || 0); if (have[k] > 0) have[k]--; else newSales.push(x) });
+  const rHave = {}; dbMoves.forEach(x => ms(rHave, [x.moved_on, pn[x.product_id], x.qty].join('|')));
+  const newRecs = []; frecs.forEach(x => { const k = [x.date, fname[x.productId].name, Math.round(Number(x.qty))].join('|'); if (rHave[k] > 0) rHave[k]--; else newRecs.push(x) });
+  const eHave = {}; dbExps.forEach(x => ms(eHave, [x.spent_on, x.description, r2(x.amount)].join('|')));
+  const newExps = []; fexps.forEach(x => { const k = [x.date, String(x.description || 'Expense').slice(0, 300), r2(x.amount)].join('|'); if (eHave[k] > 0) eHave[k]--; else newExps.push(x) });
+  const addTotal = r2(newSales.reduce((n, x) => n + Number(x.qty) * Number(x.price), 0));
+  if (!newSales.length && !newRecs.length && !newExps.length && !missing.length) { prog(''); return showInfo('<h3>Nothing new</h3><p>This business already has everything in that file.</p>') }
+  if (!await sure(`Add the newer records from this file to ${S.biz.name}?\n\n• ${newSales.length} new sales (${money(addTotal)})\n• ${newRecs.length} stock received entries\n• ${newExps.length} expenses\n• ${missing.length} new products\n\nRecords that are already here are skipped.`, 'Add now')) { prog(''); return }
+  const dates = [...d.sales, ...d.receipts, ...d.expenses].filter(x => x.account === acct).map(x => x.date).filter(Boolean).sort(), openOn = dates.length ? addDays(dates[0], -1) : today();
+  if (missing.length) {
+    prog('Adding new products…');
+    const rows = await insert('products', missing.map(p => ({ business_id: B, name: String(p.name || 'Item').slice(0, 200), category: null, price: r2(Math.max(0, Number(p.price) || 0)), min_stock: Math.max(0, Math.round(Number(p.minimum) || 0)) })), true);
+    if (rows.length !== missing.length) throw new Error('New product count mismatch. Nothing further was added.');
+    const o = []; missing.forEach((p, i) => { map[p.id] = rows[i].id; if (Number(p.opening) > 0) o.push({ business_id: B, product_id: rows[i].id, qty: Math.round(Number(p.opening)), kind: 'opening', note: 'Imported opening stock', moved_on: openOn }) });
+    if (o.length) await insert('stock_moves', o);
+  }
+  if (newRecs.length) { prog('Adding stock received…'); await insert('stock_moves', newRecs.map(x => ({ business_id: B, product_id: map[x.productId], qty: Math.round(Number(x.qty)), kind: 'receipt', note: x.remark || 'Imported', moved_on: x.date }))) }
+  for (let i = 0; i < newSales.length; i++) {
+    const x = newSales[i]; prog(`Adding sales… ${i + 1} of ${newSales.length}`);
+    const amount = r2(Number(x.qty) * Number(x.price)), cash = r2(Number(x.cash) || 0), tr = r2(Number(x.transfer) || 0), credit = Math.max(0, r2(amount - cash - tr));
+    for (let tries = 0; ; tries++) { try { await rpc('record_sale', { p_id: uuid(), p_business: B, p_sold_on: x.date, p_cash: cash, p_transfer: tr, p_credit: credit, p_items: [{ product_id: map[x.productId], qty: Math.round(Number(x.qty)), unit_price: r2(Number(x.price)) }], p_note: 'Imported' }); break } catch (e) { if (tries >= 2 || (e.status >= 400 && e.status < 500 && e.status !== 429)) throw new Error('Stopped after ' + i + ' sales: ' + e.message + '. Run "Add only the newer records" again; it continues where it stopped without doubling.'); await new Promise(r => setTimeout(r, 800)) } }
+  }
+  if (newExps.length) { prog('Adding expenses…'); await insert('expenses', newExps.map(e => ({ business_id: B, spent_on: e.date, description: String(e.description || 'Expense').slice(0, 300), amount: r2(e.amount), method: ['cash', 'transfer', 'other'].includes(String(e.method).toLowerCase()) ? String(e.method).toLowerCase() : 'other' }))) }
+  // ---- verify against the file: sales total and every product's stock ----
+  prog('Checking…'); await loadProducts();
+  const back = await fetchAll('sales?select=total,voided&business_id=eq.' + B + '&order=id.asc'), tot = r2(back.filter(x => !x.voided).reduce((n, x) => n + Number(x.total), 0)), want = r2(fsales.reduce((n, x) => n + Number(x.qty) * Number(x.price), 0));
+  const exp = {}; fps.forEach(p => exp[p.id] = Math.round(Number(p.opening) || 0)); frecs.forEach(x => exp[x.productId] += Math.round(Number(x.qty))); fsales.forEach(x => exp[x.productId] -= Math.round(Number(x.qty)));
+  let bad = []; fps.forEach(p => { const dbp = S.products.find(q => q.product_id === map[p.id]); if (!dbp || stockOf(dbp) !== exp[p.id]) bad.push(p.name + ' (file says ' + exp[p.id] + ', app has ' + (dbp ? stockOf(dbp) : '?') + ')') });
+  const expTotal = r2(fexps.reduce((n, x) => n + Number(x.amount), 0)), dbExp2 = r2((await fetchAll('expenses?select=amount,voided&business_id=eq.' + B + '&order=id.asc')).filter(x => !x.voided).reduce((n, x) => n + Number(x.amount), 0));
+  const good = Math.abs(tot - want) < 0.01 && !bad.length && Math.abs(expTotal - dbExp2) < 0.01;
+  await showInfo(`<h3>Newer records added</h3><p>Added ${newSales.length} sales, ${newRecs.length} stock entries, ${newExps.length} expenses and ${missing.length} new products.</p><p class="muted">Sales total in the app: <b>${money(tot)}</b><br>Sales total in your file: <b>${money(want)}</b><br>Expenses in the app: <b>${money(dbExp2)}</b> · in your file: <b>${money(expTotal)}</b><br>Products whose stock matches the file: <b>${fps.length - bad.length} of ${fps.length}</b></p>${good ? '<p class="good">✓ Everything matches your backup exactly.</p>' : '<p class="err">Something does not match. Do not rely on these records yet.' + (bad.length ? '<br>' + esc(bad.slice(0, 6).join('; ')) : '') + '</p>'}`);
   go('dash');
 });
 
